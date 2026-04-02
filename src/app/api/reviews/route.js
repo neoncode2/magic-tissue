@@ -23,7 +23,10 @@ export async function POST(request) {
 
   try {
     const body = await request.json();
-    const review = new Review(body);
+    const review = new Review({
+      ...body,
+      verified: false,
+    });
     await review.save();
 
     return new Response(JSON.stringify(review), {

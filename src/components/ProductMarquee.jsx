@@ -16,7 +16,7 @@ const productImages = [
 
 export default function ProductMarquee() {
   return (
-    <section className="bg-[#080808] py-16 overflow-hidden border-t border-white/5">
+    <section className="bg-[#080808] py-4  overflow-hidden border-t border-white/5">
       <div className="container mx-auto px-4 mb-10 text-center">
         <motion.h2 
           initial={{ opacity: 0, y: 20 }}

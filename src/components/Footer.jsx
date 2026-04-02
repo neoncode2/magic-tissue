@@ -2,13 +2,6 @@
 
 import { motion } from 'framer-motion';
 
-const quickLinks = [
-  { href: '#hero', label: 'হোম' },
-  { href: '#product', label: 'উপকারিতা' },
-  { href: '#reviews', label: 'রিভিউ' },
-  { href: '#order-form', label: 'অর্ডার করুন' },
-];
-
 const trustItems = [
   'Cash on Delivery সারা বাংলাদেশে',
   'প্যাকেটের ওপর কোনো নাম থাকবে না',
@@ -16,10 +9,6 @@ const trustItems = [
   'গোপনীয়তা বজায় রাখার নিশ্চয়তা',
 ];
 
-const contactItems = [
-  { href: 'tel:+8801700000000', label: '+880 1700 000000' },
-  { href: 'https://wa.me/8801700000000', label: 'WhatsApp Support' },
-];
 
 const cardClass =
   'rounded-[28px] border border-white/5 bg-white/[0.02] backdrop-blur-md px-6 py-8 text-center transition duration-300 hover:-translate-y-2 hover:border-rose-600/30 hover:bg-white/[0.04]';
@@ -69,55 +58,8 @@ export default function Footer() {
           </div>
         </motion.div>
 
-        {/* Footer Links Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {/* Logo & About */}
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} className={cardClass}>
-            <div className="flex flex-col items-center gap-3 mb-6">
-              <div className="h-12 w-12 rounded-2xl bg-rose-600 flex items-center justify-center font-black text-xl text-white shadow-lg">MT</div>
-              <h3 className="text-xl font-black text-white uppercase tracking-tighter">Magic Tissue</h3>
-            </div>
-            <p className="text-sm leading-relaxed text-gray-400">
-              আমরা আপনার গোপনীয়তা এবং সন্তুষ্টির সর্বোচ্চ গুরুত্ব দিয়ে থাকি। সারা বাংলাদেশে দ্রুত ও নিরাপদ ডেলিভারি।
-            </p>
-          </motion.div>
 
-          {/* Quick Links */}
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className={cardClass}>
-            <h3 className="mb-6 text-lg font-bold text-white uppercase tracking-widest">লিঙ্কসমূহ</h3>
-            <div className="space-y-3">
-              {quickLinks.map((link) => (
-                <a key={link.href} href={link.href} className="block text-gray-400 hover:text-rose-500 transition-colors text-sm font-bold">
-                  {link.label}
-                </a>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* Trust Labels */}
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className={cardClass}>
-            <h3 className="mb-6 text-lg font-bold text-white uppercase tracking-widest">গ্যারান্টি</h3>
-            <div className="space-y-4">
-              <div className="bg-white/5 p-3 rounded-xl text-xs font-bold text-gray-300">🔒 Secure Billing</div>
-              <div className="bg-white/5 p-3 rounded-xl text-xs font-bold text-gray-300">📦 Discreet Packing</div>
-              <div className="bg-white/5 p-3 rounded-xl text-xs font-bold text-gray-300">⚡ Fast Nationwide Delivery</div>
-            </div>
-          </motion.div>
-
-          {/* Contact Details */}
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className={cardClass}>
-            <h3 className="mb-6 text-lg font-bold text-white uppercase tracking-widest">যোগাযোগ</h3>
-            <div className="space-y-4">
-              {contactItems.map((item, index) => (
-                <a key={index} href={item.href} className="block bg-rose-600/10 border border-rose-600/20 rounded-xl py-3 text-sm font-black text-rose-500 hover:bg-rose-600 hover:text-white transition-all">
-                  {item.label}
-                </a>
-              ))}
-              <div className="text-xs text-gray-500 font-bold uppercase tracking-widest">ঢাকা, বাংলাদেশ</div>
-            </div>
-          </motion.div>
-        </div>
-
+    
         {/* Bottom Bar */}
         <div className="mt-20 border-t border-white/5 pt-10 text-center">
           <p className="text-xs font-bold text-gray-600 uppercase tracking-widest">

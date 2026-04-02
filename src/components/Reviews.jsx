@@ -21,7 +21,7 @@ export default function Reviews() {
     <section id="reviews" className="section-shell bg-[#080808] overflow-hidden">
       <div className="section-frame">
         {/* Header */}
-        <div className="text-center mb-12 md:mb-20">
+        <div className="text-center mb-4 md:mb-7">
           <motion.span 
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}

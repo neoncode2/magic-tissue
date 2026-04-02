@@ -18,6 +18,14 @@ const OrderSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    productLabel: {
+      type: String,
+      default: 'Magic Tissue',
+    },
+    packageLabel: {
+      type: String,
+      default: '',
+    },
     quantity: {
       type: Number,
       default: 1,

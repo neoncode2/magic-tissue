@@ -12,7 +12,7 @@ export default function TrustBadges() {
   return (
     <section className="section-shell">
       <div className="section-frame">
-        <div className="text-center mb-16 md:mb-24">
+        <div className="text-center mb-6 md:mb-12">
           <span className="eyebrow">Trust Signals</span>
           <h2 className="section-title text-white mt-4">কেন আমাদের ওপর আস্থা রাখবেন?</h2>
         </div>
