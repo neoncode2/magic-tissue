@@ -1,36 +1,142 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# 🔥 Magic Tissue - E-Commerce Landing Page
 
-## Getting Started
+**🎯 একটি উচ্চ-রূপান্তরকারী ই-কমার্স ল্যান্ডিং পেজ, লাল থিম সংস্করণ**
 
-First, run the development server:
+এই প্রকল্পটি একটি আধুনিক, প্রিমিয়াম স্কিন কেয়ার পণ্যের জন্য সম্পূর্ণ ল্যান্ডিং পেজ যা **আবেগ**, **জরুরীতা** এবং **সরলতা** এর উপর ভিত্তি করে তৈরি।
+
+## 🎨 বৈশিষ্ট্য
+
+### 🖼️ ডিজাইন এবং ইউআই
+- **ডার্ক থিম** (#0B0B0B) ব্যাকগ্রাউন্ড
+- **বোল্ড রেড** (#E50914) অ্যাকসেন্ট
+- **Framer Motion** অ্যানিমেশন
+- **সম্পূর্ণ প্রতিক্রিয়াশীল** ডিজাইন
+- **মোবাইল অপ্টিমাইজড**
+
+### 📸 সেকশন
+1. **নেভিগেশন বার** - স্টিকি এবং ফিক্সড
+2. **হিরো সেকশন** - প্রভাবশালী হেডলাইন এবং CTA
+3. **ট্রাস্ট ব্যাজ** - নিরাপত্তা এবং বিশ্বাস সংকেত
+4. **বৈশিষ্ট্য** - ৬টি মূল সুবিধা
+5. **পর্যালোচনা স্লাইডার** - Swiper.js সহ
+6. **অফার সেকশন** - উন্মাদ গণনা এবং জরুরিতা
+7. **অর্ডার ফর্ম** - সম্পূর্ণ কাস্টমার তথ্য
+8. **FAQ** - প্রায়শ জিজ্ঞাসিত প্রশ্ন
+9. **ফুটার** - যোগাযোগ এবং সোশ্যাল লিংক
+
+### 🛠️ প্রযুক্তি স্ট্যাক
+- **Frontend**: Next.js 16.x, React 19.x, Tailwind CSS v4
+- **Animations**: Framer Motion
+- **Slider**: Swiper.js
+- **Backend**: Next.js API Routes
+- **Database**: MongoDB + Mongoose
+- **Styling**: Tailwind CSS + Custom CSS
+
+## 📋 প্রয়োজনীয়তা
+
+- Node.js 18+ এবং npm/yarn
+- MongoDB (স্থানীয় বা MongoDB Atlas)
+- Git
+
+## 🚀 সেটআপ নির্দেশনা
+
+### 1️⃣ প্রকল্প খোলা
+
+```bash
+cd c:\projects\magic-tissue
+```
+
+### 2️⃣ নির্ভরতা ইনস্টল করুন
+
+```bash
+npm install
+```
+
+### 3️⃣ পরিবেশ ভেরিয়েবল সেট করুন
+
+`.env.local` ফাইল তৈরি করুন:
+
+```env
+MONGODB_URI=mongodb://localhost:27017/magic-tissue
+NODE_ENV=development
+```
+
+### 4️⃣ ডাটাবেস সীড করুন (ঐচ্ছিক)
+
+```bash
+node scripts/seed.js
+```
+
+### 5️⃣ উন্নয়ন সার্ভার চালু করুন
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+**URL**: [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## 📁 ফোল্ডার কাঠামো
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+magic-tissue/
+├── public/images/          # পণ্য এবং গ্রাহক ছবি
+├── src/
+│   ├── app/api/           # API এন্ডপয়েন্ট
+│   ├── components/        # React কম্পোনেন্ট
+│   └── app/
+│       ├── globals.css
+│       ├── layout.js
+│       └── page.js
+├── lib/mongodb.js         # DB সংযোগ
+├── models/                # Mongoose স্কিমা
+└── scripts/seed.js        # ডাটাবেস সিডিং
+```
 
-## Learn More
+## 🎨 রঙের থিম
 
-To learn more about Next.js, take a look at the following resources:
+| ব্যবহার | রঙ | হেক্স |
+|--------|-----|------|
+| প্রধান লাল | উজ্জ্বল লাল | #E50914 |
+| অ্যাকসেন্ট লাল | সাবধানী | #FF3B3B |
+| মূল পটভূমি | কালো | #0B0B0B |
+| প্রধান পাঠ্য | সাদা | #FFFFFF |
+| গৌণ পাঠ্য | হালকা ধূসর | #BFBFBF |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🔌 API এন্ডপয়েন্ট
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+POST   /api/orders        - নতুন অর্ডার তৈরি করুন
+GET    /api/orders        - সব অর্ডার পান
+GET    /api/reviews       - পর্যালোচনা পান
+GET    /api/faqs          - FAQ পান
+GET    /api/products      - পণ্য পান
+```
 
-## Deploy on Vercel
+## 💻 আপনার অর্ডার ডাটা
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+অর্ডার সেভ হবে:
+- গ্রাহক নাম
+- ফোন নম্বর
+- সম্পূর্ণ ঠিকানা
+- শহর
+- পরিমাণ
+- পেমেন্ট পদ্ধতি (COD/bKash/Nagad)
+- মোট মূল্য
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🌐 স্থাপনা
+
+Vercel এ স্থাপন করুন (সুপারিশকৃত):
+
+1. GitHub এ পুশ করুন
+2. [Vercel](https://vercel.com) এ সাইন আপ করুন
+3. নতুন প্রকল্প তৈরি করুন
+4. `MONGODB_URI` পরিবেশ ভেরিয়েবল যোগ করুন
+5. স্থাপন করুন!
+
+## 🚨 গুরুত্বপূর্ণ
+
+⚠️ **কখনও `.env.local` কমিট করবেন না** - এটিতে আপনার ডাটাবেস ক্রেডেনশিয়াল থাকে!
+
+## 📄 লাইসেন্স
+
+MIT লাইসেন্সের অধীন

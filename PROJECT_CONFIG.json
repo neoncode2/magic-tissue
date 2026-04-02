@@ -1,0 +1,143 @@
+{
+  "projectName": "Magic Tissue - E-Commerce Landing Page",
+  "version": "1.0.0",
+  "description": "উচ্চ-রূপান্তরকারী ই-কমার্স ল্যান্ডিং পেজ, লাল থিম সংস্করণ",
+  "theme": {
+    "name": "Red Aggressive Theme",
+    "primaryRed": "#E50914",
+    "darkRed": "#B20710",
+    "accentRed": "#FF3B3B",
+    "backgroundColor": "#0B0B0B",
+    "sectionBackground": "#111111",
+    "cardBackground": "#1A1A1A",
+    "textPrimary": "#FFFFFF",
+    "textSecondary": "#BFBFBF",
+    "textMuted": "#808080"
+  },
+  "sections": [
+    "Navigation Bar",
+    "Hero Section",
+    "Trust Badges",
+    "Features/Benefits",
+    "Reviews Slider",
+    "Offer Section (Countdown)",
+    "Order Form",
+    "FAQ",
+    "Footer"
+  ],
+  "features": {
+    "frontend": [
+      "Next.js 16.2.2",
+      "React 19.2.4",
+      "Tailwind CSS v4",
+      "Framer Motion (Animations)",
+      "Swiper.js (Slider)",
+      "Responsive Design",
+      "Mobile First"
+    ],
+    "backend": [
+      "Next.js API Routes",
+      "MongoDB Database",
+      "Mongoose ODM",
+      "REST API"
+    ],
+    "endpoints": [
+      "POST /api/orders",
+      "GET /api/orders",
+      "GET /api/reviews",
+      "POST /api/reviews",
+      "GET /api/faqs",
+      "POST /api/faqs",
+      "GET /api/products",
+      "POST /api/products"
+    ]
+  },
+  "models": {
+    "Order": {
+      "name": "String",
+      "phone": "String",
+      "address": "String",
+      "city": "String",
+      "quantity": "Number",
+      "totalPrice": "Number",
+      "paymentMethod": "COD | bKash | Nagad",
+      "status": "pending | confirmed | shipped | delivered | cancelled"
+    },
+    "Review": {
+      "name": "String",
+      "rating": "Number (1-5)",
+      "comment": "String",
+      "verified": "Boolean"
+    },
+    "Product": {
+      "name": "String",
+      "description": "String",
+      "price": "Number",
+      "discount": "Number",
+      "features": "Array",
+      "inStock": "Boolean"
+    },
+    "FAQ": {
+      "question": "String",
+      "answer": "String",
+      "order": "Number",
+      "active": "Boolean"
+    }
+  },
+  "components": {
+    "Navbar": "Fixed top navigation with mobile menu",
+    "Hero": "Main landing section with CTA",
+    "TrustBadges": "Payment and delivery trust indicators",
+    "Features": "6 key benefits showcase",
+    "Reviews": "Swiper-based review slider",
+    "OfferSection": "Countdown timer with urgency",
+    "OrderForm": "Complete order form with validation",
+    "FAQ": "Expandable FAQ section",
+    "Footer": "Footer with links and social"
+  },
+  "conversionFeatures": [
+    "Limited stock text",
+    "Countdown timer",
+    "Large CTA buttons",
+    "Trust badges",
+    "Social proof (reviews)",
+    "Price discount highlight",
+    "Payment methods display",
+    "Money-back guarantee",
+    "Verified buyer badges"
+  ],
+  "utilities": {
+    "animations": "Framer Motion",
+    "forms": "Controlled React components",
+    "dataFetching": "Axios + React Query (ready)",
+    "styling": "Tailwind CSS + Custom CSS",
+    "database": "MongoDB + Mongoose"
+  },
+  "fileStructure": {
+    "public": "Static assets and images",
+    "src/app/api": "API endpoints (orders, reviews, faqs, products)",
+    "src/components": "React components",
+    "src/app": "Pages and layouts",
+    "lib": "Database connection utilities",
+    "models": "Mongoose schemas",
+    "scripts": "Utility scripts (seed database)",
+    "config": "Configuration files"
+  },
+  "setup": {
+    "install": "npm install",
+    "dev": "npm run dev",
+    "build": "npm run build",
+    "start": "npm start",
+    "lint": "npm run lint",
+    "seed": "node scripts/seed.js"
+  },
+  "deployment": {
+    "recommended": "Vercel",
+    "alternatives": ["Netlify", "Railway", "AWS Amplify", "Self-hosted VPS"],
+    "database": "MongoDB Atlas (recommended)",
+    "documentation": "See DEPLOYMENT.md"
+  },
+  "language": "Bengali (বাংলা) + English",
+  "createdAt": "2024",
+  "status": "Production Ready"
+}
