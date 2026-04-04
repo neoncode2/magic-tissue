@@ -15,12 +15,19 @@ export default async function AdminLoginPage() {
     redirect('/admin');
   }
 
-  await dbConnect();
-  const adminCount = await Admin.countDocuments();
+  let adminCount = null;
+  let dbError = '';
+
+  try {
+    await dbConnect();
+    adminCount = await Admin.countDocuments();
+  } catch (error) {
+    dbError = error instanceof Error ? error.message : 'Database connection failed';
+  }
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(229,9,20,0.16),transparent_35%),#070707]">
-      <AdminLogin needsSetup={adminCount === 0} />
+      <AdminLogin needsSetup={adminCount === 0} dbError={dbError} />
     </main>
   );
 }

@@ -2,16 +2,17 @@ import crypto from 'crypto';
 import { cookies } from 'next/headers';
 import dbConnect from '@/lib/mongodb';
 import Admin from '@/models/Admin';
+import { getAdminSessionSecret, getMasterAdminKey } from '@/lib/env';
 
 const SESSION_COOKIE_NAME = 'mt-admin-session';
 const SESSION_MAX_AGE = 60 * 60 * 24 * 7;
 
 function getSessionSecret() {
-  return process.env.ADMIN_SESSION_SECRET || 'magic-tissue-admin-session-secret';
+  return getAdminSessionSecret();
 }
 
 function getMasterKey() {
-  return process.env.MASTER_ADMIN_KEY || 'magic-tissue-master-key';
+  return getMasterAdminKey();
 }
 
 function toBase64Url(value) {

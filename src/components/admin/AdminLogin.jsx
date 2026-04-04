@@ -5,7 +5,7 @@ import { useState } from 'react';
 const inputClass =
   'w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none transition focus:border-rose-500 focus:bg-black/50';
 
-export default function AdminLogin({ needsSetup = false }) {
+export default function AdminLogin({ needsSetup = false, dbError = '' }) {
   const [tab, setTab] = useState(needsSetup ? 'create' : 'login');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
@@ -66,7 +66,7 @@ export default function AdminLogin({ needsSetup = false }) {
         throw new Error(data.error || 'Admin create failed');
       }
 
-      setMessage('Admin তৈরি হয়েছে। এখন username/password দিয়ে login করুন।');
+      setMessage('Admin created successfully. You can now log in with the new username and password.');
       setTab('login');
       event.currentTarget.reset();
     } catch (error) {
@@ -90,8 +90,8 @@ export default function AdminLogin({ needsSetup = false }) {
             </span>
           </h1>
           <p className="max-w-2xl text-base leading-7 text-gray-400 md:text-lg">
-            এখান থেকে video post, offer, package, benefit, reviews approval, orders, revenue overview সবকিছু
-            control করা যাবে। প্রথম admin create করতে master key লাগবে, তারপর normal login দিয়ে dashboard use করা যাবে।
+            Use this panel to manage content, orders, reviews, and admin access. The first admin must be created with the
+            master key, then normal username/password login can be used.
           </p>
         </div>
 
@@ -177,10 +177,18 @@ export default function AdminLogin({ needsSetup = false }) {
           <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-gray-300">{message}</div>
         ) : null}
 
+        {dbError ? (
+          <div className="mt-5 rounded-2xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
+            Database is not ready: {dbError}
+          </div>
+        ) : null}
+
         <div className="mt-6 rounded-2xl border border-white/10 bg-black/20 p-4 text-xs leading-6 text-gray-400">
-          {needsSetup
-            ? 'এই project-এ এখনো কোনো admin নেই। আগে master key দিয়ে প্রথম admin create করুন।'
-            : 'নতুন admin create করতে master key লাগবে। existing admin login সবসময় username/password দিয়েই হবে।'}
+          {dbError
+            ? 'Admin status could not be checked because MongoDB connection failed. Fix Atlas username, password, and network access first.'
+            : needsSetup
+              ? 'No admin exists in this project yet. Create the first admin using the master key.'
+              : 'Use username and password to log in. Creating another admin requires the master key.'}
         </div>
       </div>
     </div>

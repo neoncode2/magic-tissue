@@ -1,11 +1,11 @@
 import dbConnect from '@/lib/mongodb';
 import Admin from '@/models/Admin';
 import { setAdminSession, verifyPassword } from '@/lib/admin-auth';
+import { serverErrorResponse } from '@/lib/server-error';
 
 export async function POST(request) {
-  await dbConnect();
-
   try {
+    await dbConnect();
     const { username, password } = await request.json();
 
     if (!username || !password) {
@@ -38,6 +38,6 @@ export async function POST(request) {
       },
     });
   } catch (error) {
-    return Response.json({ error: 'Login failed', details: error.message }, { status: 500 });
+    return serverErrorResponse('Login failed', error);
   }
 }

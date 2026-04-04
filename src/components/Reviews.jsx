@@ -1,52 +1,72 @@
 'use client';
-import { useEffect, useState } from 'react';
+
 import { motion } from 'framer-motion';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination, EffectCoverflow } from 'swiper/modules';
 
-// Swiper CSS Styles
 import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/effect-coverflow';
 
 const fallbackReviews = [
-  { _id: 1, name: 'সাবিহা আক্তার', rating: 5, comment: 'প্যাকেজিং আর delivery দুটোই premium লেগেছে। order করার পর খুব fast confirmation পেয়েছি।', verified: true },
-  { _id: 2, name: 'নওরীন ইসলাম', rating: 5, comment: 'ব্যবহার করা easy, আর overall experience অনেক clean। offer price-এ value খুব ভালো লেগেছে।', verified: true },
-  { _id: 3, name: 'মেহজাবিন রহমান', rating: 5, comment: 'আগেও similar কিছু ট্রাই করেছি, কিন্তু এইটা presentation আর delivery speed-এ better মনে হয়েছে।', verified: true },
-  { _id: 4, name: 'রাকিব হাসান', rating: 5, comment: 'খুবই ডিসক্রিট ডেলিভারি। প্যাকেটের ওপর কোনো আজেবাজে নাম ছিল না। প্রডাক্ট কোয়ালিটি ১০০/১০০!', verified: true },
+  {
+    _id: 1,
+    name: 'সাবিহা আক্তার',
+    rating: 5,
+    comment: 'প্যাকেজিং আর delivery দুটোই premium লেগেছে। order করার পর খুব fast confirmation পেয়েছি।',
+    verified: true,
+  },
+  {
+    _id: 2,
+    name: 'নওরীন ইসলাম',
+    rating: 5,
+    comment: 'ব্যবহার করা easy, আর overall experience অনেক clean। offer price-এ value খুব ভালো লেগেছে।',
+    verified: true,
+  },
+  {
+    _id: 3,
+    name: 'মেহজাবিন রহমান',
+    rating: 5,
+    comment: 'আগেও similar কিছু ট্রাই করেছি, কিন্তু এইটা presentation আর delivery speed-এ better মনে হয়েছে।',
+    verified: true,
+  },
+  {
+    _id: 4,
+    name: 'রাকিব হাসান',
+    rating: 5,
+    comment: 'খুবই ডিসক্রিট ডেলিভারি। প্যাকেটের উপর কোনো আজেবাজে নাম ছিল না। প্রডাক্ট কোয়ালিটি ১০০/১০০!',
+    verified: true,
+  },
 ];
 
 export default function Reviews() {
+  const reviews = fallbackReviews;
+  const enableLoop = reviews.length >= 5;
+
   return (
-    <section id="reviews" className="section-shell bg-[#080808] overflow-hidden">
+    <section id="reviews" className="section-shell overflow-hidden bg-[#080808]">
       <div className="section-frame">
-        {/* Header */}
-        <div className="text-center mb-4 md:mb-7">
-          <motion.span 
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            className="eyebrow"
-          >
+        <div className="mb-4 text-center md:mb-7">
+          <motion.span initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} className="eyebrow">
             Happy Customers
           </motion.span>
-          <motion.h2 
+          <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            className="section-title text-white mt-4"
+            className="section-title mt-4 text-white"
           >
             ব্যবহারকারীদের অভিজ্ঞতা
           </motion.h2>
         </div>
 
-        {/* Swiper Container */}
         <div className="px-4">
           <Swiper
             modules={[Autoplay, Pagination, EffectCoverflow]}
-            effect={'coverflow'}
-            grabCursor={true}
-            centeredSlides={true}
-            loop={true}
-            slidesPerView={'auto'}
+            effect="coverflow"
+            grabCursor
+            centeredSlides
+            loop={enableLoop}
+            slidesPerView="auto"
             coverflowEffect={{
               rotate: 0,
               stretch: 0,
@@ -59,73 +79,46 @@ export default function Reviews() {
               disableOnInteraction: false,
             }}
             pagination={{ clickable: true }}
-            className="!pb-20 !pt-10 review-swiper"
+            className="review-swiper !pb-20 !pt-10"
           >
-            {fallbackReviews.map((review) => (
+            {reviews.map((review) => (
               <SwiperSlide key={review._id} className="max-w-[350px] md:max-w-[450px]">
-                <div className="panel-premium h-full p-8 md:p-10 rounded-[40px] border-white/10 bg-gradient-to-b from-[#1a1a1a] to-[#0d0d0d] shadow-2xl flex flex-col justify-between group transition-all">
-                  
-                  {/* Top Part */}
+                <div className="panel-premium flex h-full flex-col justify-between rounded-[40px] border-white/10 bg-gradient-to-b from-[#1a1a1a] to-[#0d0d0d] p-8 shadow-2xl transition-all md:p-10">
                   <div>
-                    <div className="flex justify-between items-center mb-8">
-                      <div className="flex gap-1 text-yellow-400 text-xl">
-                        {'★'.repeat(review.rating)}
-                      </div>
-                      {review.verified && (
-                        <span className="flex items-center gap-1 bg-rose-600/10 text-rose-500 text-[10px] font-black px-3 py-1 rounded-full border border-rose-600/20 uppercase tracking-tighter">
-                          <span className="w-1.5 h-1.5 bg-rose-600 rounded-full animate-pulse" /> Verified
+                    <div className="mb-8 flex items-center justify-between">
+                      <div className="flex gap-1 text-xl text-yellow-400">{'★'.repeat(review.rating)}</div>
+                      {review.verified ? (
+                        <span className="flex items-center gap-1 rounded-full border border-rose-600/20 bg-rose-600/10 px-3 py-1 text-[10px] font-black uppercase tracking-tighter text-rose-500">
+                          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-rose-600" />
+                          Verified
                         </span>
-                      )}
+                      ) : null}
                     </div>
-                    
-                    <p className="text-gray-300 text-lg md:text-xl leading-relaxed italic font-medium">
+
+                    <p className="text-lg font-medium italic leading-relaxed text-gray-300 md:text-xl">
                       &ldquo;{review.comment}&rdquo;
                     </p>
                   </div>
 
-                  {/* Bottom Part */}
                   <div className="mt-10 flex items-center gap-4 border-t border-white/5 pt-8">
-                    <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-rose-500 to-red-700 flex items-center justify-center font-black text-xl text-white shadow-lg group-hover:rotate-6 transition-transform">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-500 to-red-700 text-xl font-black text-white shadow-lg transition-transform group-hover:rotate-6">
                       {review.name[0]}
                     </div>
                     <div>
-                      <h4 className="font-bold text-white text-lg">{review.name}</h4>
+                      <h4 className="text-lg font-bold text-white">{review.name}</h4>
                       <div className="flex items-center gap-2">
-                         <span className="text-xs text-rose-500 font-bold uppercase tracking-widest">সন্তুষ্ট ক্রেতা</span>
-                         <span className="text-gray-600">|</span>
-                         <span className="text-[10px] text-gray-500 italic">verified purchase</span>
+                        <span className="text-xs font-bold uppercase tracking-widest text-rose-500">সন্তুষ্ট ক্রেতা</span>
+                        <span className="text-gray-600">|</span>
+                        <span className="text-[10px] italic text-gray-500">verified purchase</span>
                       </div>
                     </div>
                   </div>
-
                 </div>
               </SwiperSlide>
             ))}
           </Swiper>
         </div>
       </div>
-
-      {/* কাস্টম সিএসএস যা স্লাইডারকে আরও সুন্দর করবে */}
-      <style jsx global>{`
-        .review-swiper .swiper-slide {
-          opacity: 0.4;
-          transition: opacity 0.5s ease;
-        }
-        .review-swiper .swiper-slide-active {
-          opacity: 1;
-        }
-        .review-swiper .swiper-pagination-bullet {
-          background: #e50914 !important;
-          width: 12px;
-          height: 12px;
-          opacity: 0.3;
-        }
-        .review-swiper .swiper-pagination-bullet-active {
-          opacity: 1;
-          width: 30px;
-          border-radius: 6px;
-        }
-      `}</style>
     </section>
   );
 }

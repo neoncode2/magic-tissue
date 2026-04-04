@@ -6,23 +6,27 @@ import {
   unauthorizedResponse,
   verifyMasterKey,
 } from '@/lib/admin-auth';
+import { serverErrorResponse } from '@/lib/server-error';
 
 export async function GET(request) {
-  const admin = await requireAdminApi(request);
+  try {
+    const admin = await requireAdminApi(request);
 
-  if (!admin) {
-    return unauthorizedResponse();
+    if (!admin) {
+      return unauthorizedResponse();
+    }
+
+    await dbConnect();
+    const admins = await Admin.find().select('_id username displayName role createdAt lastLoginAt').sort({ createdAt: -1 });
+    return Response.json(admins);
+  } catch (error) {
+    return serverErrorResponse('Failed to load admins', error);
   }
-
-  await dbConnect();
-  const admins = await Admin.find().select('_id username displayName role createdAt lastLoginAt').sort({ createdAt: -1 });
-  return Response.json(admins);
 }
 
 export async function POST(request) {
-  await dbConnect();
-
   try {
+    await dbConnect();
     const { username, password, displayName, masterKey } = await request.json();
 
     if (!verifyMasterKey(masterKey)) {
@@ -61,6 +65,6 @@ export async function POST(request) {
       { status: 201 }
     );
   } catch (error) {
-    return Response.json({ error: 'Failed to create admin', details: error.message }, { status: 500 });
+    return serverErrorResponse('Failed to create admin', error);
   }
 }

@@ -15,8 +15,14 @@ export default async function AdminPage() {
     redirect('/admin/login');
   }
 
-  await dbConnect();
-  const admin = await Admin.findById(session.id).select('_id username displayName role').lean();
+  let admin = null;
+
+  try {
+    await dbConnect();
+    admin = await Admin.findById(session.id).select('_id username displayName role').lean();
+  } catch {
+    redirect('/admin/login?error=backend');
+  }
 
   if (!admin) {
     redirect('/admin/login');
