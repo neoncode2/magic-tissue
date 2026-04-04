@@ -10,6 +10,7 @@ import FAQ from '@/components/FAQ';
 import Footer from '@/components/Footer';
 import DiscreteShipping from '@/components/DiscreteShipping';
 import ProductMarquee from '@/components/ProductMarquee';
+import FloatingWhatsApp from '@/components/FloatingWhatsApp';
 
 export default function Home() {
   return (
@@ -36,7 +37,7 @@ export default function Home() {
       <FAQ />
       <ProductMarquee />
       <Footer />
-    
+      <FloatingWhatsApp />
     </main>
   );
 }

@@ -67,7 +67,7 @@ export default function Footer() {
             <div className="mt-10 flex items-center justify-center">
               <motion.a
                 whileHover={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }}
-                href="tel:+8801700000000"
+                href="tel:+601164444944"
                 className="w-full rounded-2xl border border-white/10 bg-white/5 px-10 py-5 text-center text-lg font-bold text-white transition-all sm:w-auto"
               >
                 কল করুন
@@ -77,7 +77,7 @@ export default function Footer() {
         </motion.div>
 
         <div className="mt-20 border-t border-white/5 pt-10 text-center">
-          <p className="text-xs font-bold uppercase tracking-widest text-gray-600">© 2026 Magic Tissue Bangladesh. All Rights Reserved.</p>
+          <p className="text-xs font-bold uppercase tracking-widest text-gray-600">© 2026 Magic Tissue Malaysia. All Rights Reserved.</p>
         </div>
       </div>
     </footer>
