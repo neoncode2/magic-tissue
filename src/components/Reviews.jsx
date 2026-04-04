@@ -9,57 +9,65 @@ import 'swiper/css/pagination';
 import 'swiper/css/effect-coverflow';
 
 const fallbackReviews = [
-  {
-    _id: 1,
-    name: 'সাবিহা আক্তার',
-    rating: 5,
-    comment: 'প্যাকেজিং আর delivery দুটোই premium লেগেছে। order করার পর খুব fast confirmation পেয়েছি।',
-    verified: true,
-  },
-  {
-    _id: 2,
-    name: 'নওরীন ইসলাম',
-    rating: 5,
-    comment: 'ব্যবহার করা easy, আর overall experience অনেক clean। offer price-এ value খুব ভালো লেগেছে।',
-    verified: true,
-  },
-  {
-    _id: 3,
-    name: 'মেহজাবিন রহমান',
-    rating: 5,
-    comment: 'আগেও similar কিছু ট্রাই করেছি, কিন্তু এইটা presentation আর delivery speed-এ better মনে হয়েছে।',
-    verified: true,
-  },
-  {
-    _id: 4,
-    name: 'রাকিব হাসান',
-    rating: 5,
-    comment: 'খুবই ডিসক্রিট ডেলিভারি। প্যাকেটের উপর কোনো আজেবাজে নাম ছিল না। প্রডাক্ট কোয়ালিটি ১০০/১০০!',
-    verified: true,
-  },
+  { _id: 1, name: 'সাবিহা আক্তার', rating: 5, comment: 'প্যাকেজিং আর delivery দুটোই premium লেগেছে। order করার পর খুব fast confirmation পেয়েছি।', verified: true },
+  { _id: 2, name: 'নওরীন ইসলাম', rating: 5, comment: 'ব্যবহার করা easy, আর overall experience অনেক clean। offer price-এ value খুব ভালো লেগেছে।', verified: true },
+  { _id: 3, name: 'মেহজাবিন রহমান', rating: 5, comment: 'আগেও similar কিছু ট্রাই করেছি, কিন্তু এইটা presentation আর delivery speed-এ better মনে হয়েছে।', verified: true },
+  { _id: 4, name: 'রাকিব হাসান', rating: 5, comment: 'খুবই ডিসক্রিট ডেলিভারি। প্যাকেটের উপর কোনো আজেবাজে নাম ছিল না। প্রডাক্ট কোয়ালিটি ১০০/১০০!', verified: true },
 ];
 
 export default function Reviews() {
   const reviews = fallbackReviews;
-  const enableLoop = reviews.length >= 5;
+  const enableLoop = reviews.length >= 1;
 
   return (
-    <section id="reviews" className="section-shell overflow-hidden bg-[#080808]">
-      <div className="section-frame">
-        <div className="mb-4 text-center md:mb-7">
-          <motion.span initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} className="eyebrow">
+    <section id="reviews" className="relative section-shell overflow-hidden bg-[#080808] py-24">
+      
+      {/* --- আপলোড করা ছবির ব্যাকগ্রাউন্ড সেটআপ --- */}
+      <div className="absolute inset-0 z-0">
+        <motion.img 
+          initial={{ opacity: 0, scale: 1.1 }}
+          whileInView={{ opacity: 0.15, scale: 1 }} // অপাসিটি ১৫% রাখা হয়েছে যাতে লেখা পরিষ্কার থাকে
+          transition={{ duration: 1.5 }}
+          src="/bg-image/trust.jpg" 
+          alt="Trust and Connection" 
+          className="h-full w-full object-cover"
+        />
+        {/* ছবির ওপর ডার্ক গ্রাডিয়েন্ট যাতে টেক্সট হাইলাইট হয় */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#080808] via-transparent to-[#080808]" />
+      </div>
+
+      <div className="section-frame relative z-10">
+        <div className="mb-6 text-center md:mb-12">
+          <motion.span 
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            className="eyebrow"
+          >
             Happy Customers
           </motion.span>
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            className="section-title mt-4 text-white"
+            transition={{ delay: 0.2 }}
+            className="section-title mt-4 text-white !text-4xl md:!text-6xl"
           >
             ব্যবহারকারীদের অভিজ্ঞতা
           </motion.h2>
+          <motion.p 
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 0.6 }}
+            className="mt-4 text-gray-400 max-w-xl mx-auto"
+          >
+            হাজারো সুখী দম্পতির বিশ্বাসের নাম আমাদের এই সেবা
+          </motion.p>
         </div>
 
-        <div className="px-4">
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="px-4"
+        >
           <Swiper
             modules={[Autoplay, Pagination, EffectCoverflow]}
             effect="coverflow"
@@ -75,49 +83,49 @@ export default function Reviews() {
               slideShadows: false,
             }}
             autoplay={{
-              delay: 3500,
+              delay: 4000,
               disableOnInteraction: false,
             }}
             pagination={{ clickable: true }}
-            className="review-swiper !pb-20 !pt-10"
+            className="review-swiper !pb-16 !pt-4"
           >
             {reviews.map((review) => (
-              <SwiperSlide key={review._id} className="max-w-[350px] md:max-w-[450px]">
-                <div className="panel-premium flex h-full flex-col justify-between rounded-[40px] border-white/10 bg-gradient-to-b from-[#1a1a1a] to-[#0d0d0d] p-8 shadow-2xl transition-all md:p-10">
+              <SwiperSlide key={review._id} className="max-w-[350px] md:max-w-[500px]">
+                <motion.div 
+                  whileHover={{ y: -10 }}
+                  className="panel-premium flex h-full flex-col justify-between rounded-[40px] border-white/5 bg-black/40 p-8 md:p-12 shadow-2xl backdrop-blur-xl transition-all border border-rose-600/10"
+                >
                   <div>
-                    <div className="mb-8 flex items-center justify-between">
-                      <div className="flex gap-1 text-xl text-yellow-400">{'★'.repeat(review.rating)}</div>
-                      {review.verified ? (
-                        <span className="flex items-center gap-1 rounded-full border border-rose-600/20 bg-rose-600/10 px-3 py-1 text-[10px] font-black uppercase tracking-tighter text-rose-500">
-                          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-rose-600" />
+                    <div className="mb-6 flex items-center justify-between">
+                      <div className="flex gap-1 text-xl text-yellow-500">{'★'.repeat(review.rating)}</div>
+                      {review.verified && (
+                        <span className="flex items-center gap-1 rounded-full border border-rose-600/20 bg-rose-600/10 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-rose-500">
                           Verified
                         </span>
-                      ) : null}
+                      )}
                     </div>
 
-                    <p className="text-lg font-medium italic leading-relaxed text-gray-300 md:text-xl">
+                    <p className="text-xl font-medium italic leading-relaxed text-gray-200 md:text-2xl">
                       &ldquo;{review.comment}&rdquo;
                     </p>
                   </div>
 
-                  <div className="mt-10 flex items-center gap-4 border-t border-white/5 pt-8">
-                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-500 to-red-700 text-xl font-black text-white shadow-lg transition-transform group-hover:rotate-6">
+                  <div className="mt-12 flex items-center gap-4 border-t border-white/5 pt-8">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-600 to-red-700 text-xl font-black text-white shadow-lg">
                       {review.name[0]}
                     </div>
                     <div>
                       <h4 className="text-lg font-bold text-white">{review.name}</h4>
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-bold uppercase tracking-widest text-rose-500">সন্তুষ্ট ক্রেতা</span>
-                        <span className="text-gray-600">|</span>
-                        <span className="text-[10px] italic text-gray-500">verified purchase</span>
                       </div>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               </SwiperSlide>
             ))}
           </Swiper>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

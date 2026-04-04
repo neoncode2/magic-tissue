@@ -36,14 +36,7 @@ export default function Home() {
       <FAQ />
       <ProductMarquee />
       <Footer />
-
-      {/* Sticky Mobile Button with Animation */}
-      <a
-        href="#order-form"
-        className="cta-primary fixed inset-x-6 bottom-6 z-50 rounded-2xl py-4 text-center text-base font-black md:hidden uppercase tracking-widest shadow-[0_0_25px_rgba(229,9,20,0.5)] active:scale-95"
-      >
-        অর্ডার করুন এখনই
-      </a>
+    
     </main>
   );
 }

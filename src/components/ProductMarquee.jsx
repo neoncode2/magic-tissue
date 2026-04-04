@@ -17,7 +17,7 @@ const productImages = [
 export default function ProductMarquee() {
   return (
     <section className="bg-[#080808] py-4  overflow-hidden border-t border-white/5">
-      <div className="container mx-auto px-4 mb-10 text-center">
+      <div className="container mx-auto px-4 mb-5 md:mb-6 text-center">
         <motion.h2 
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -56,7 +56,7 @@ export default function ProductMarquee() {
                 <p className="text-white font-bold mb-4 text-center">ম্যাজিক টিস্যু - প্রিমিয়াম কোয়ালিটি</p>
                 <a 
                   href="#order-form" 
-                  className="bg-rose-600 text-white px-6 py-2 rounded-full font-bold text-sm hover:bg-white hover:text-black transition-colors shadow-lg"
+                  className="cta-primary rounded-full px-6 py-2 text-sm font-bold text-white"
                 >
                   Order Now 🛒
                 </a>

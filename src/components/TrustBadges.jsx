@@ -12,12 +12,12 @@ export default function TrustBadges() {
   return (
     <section className="section-shell">
       <div className="section-frame">
-        <div className="text-center mb-6 md:mb-12">
+        <div className="mb-3 md:mb-5 text-center md:mb-8">
           <span className="eyebrow">Trust Signals</span>
           <h2 className="section-title text-white mt-4">কেন আমাদের ওপর আস্থা রাখবেন?</h2>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
           {badges.map((badge, index) => (
             <motion.div
               key={badge.title}
@@ -25,12 +25,12 @@ export default function TrustBadges() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
               viewport={{ once: true }}
-              className="panel-premium rounded-[32px] p-8 text-center"
+              className="panel-premium rounded-[32px] p-6 text-center"
             >
-              <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-600/10 text-3xl">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-600/10 text-3xl">
                 {badge.icon}
               </div>
-              <h3 className="text-xl font-bold text-white mb-3">{badge.title}</h3>
+              <h3 className="mb-2 text-xl font-bold text-white">{badge.title}</h3>
               <p className="text-gray-400 text-sm leading-relaxed">{badge.desc}</p>
             </motion.div>
           ))}

@@ -40,7 +40,7 @@ export default function OfferSection() {
   const offer = config.offer;
 
   return (
-    <section className="section-shell relative flex min-h-screen items-center justify-center overflow-hidden bg-[#050505] py-24 md:py-32">
+    <section className="section-shell relative flex items-center justify-center overflow-hidden bg-[#050505] py-5 md:py-8">
       <div
         className="absolute inset-0 z-0 bg-center bg-cover bg-no-repeat"
         style={{ backgroundImage: `url('${offer.backgroundImage}')` }}
@@ -50,7 +50,7 @@ export default function OfferSection() {
 
       <div className="section-frame relative z-10">
         <div className="mx-auto max-w-6xl">
-          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} className="mb-16 text-center">
+          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} className="mb-8 text-center md:mb-10">
             <div className="mb-8 inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/5 px-6 py-2.5 shadow-2xl backdrop-blur-xl">
               <span className="relative flex h-3 w-3">
                 <span className="absolute inline-flex h-3 w-3 animate-ping rounded-full bg-rose-500 opacity-75" />
@@ -95,7 +95,7 @@ export default function OfferSection() {
                   <div className="space-y-4">
                     <a
                       href="#order-form"
-                      className="block w-full rounded-3xl bg-rose-600 py-6 text-2xl font-black uppercase tracking-widest text-white shadow-[0_20px_50px_rgba(229,9,20,0.4)] transition-all hover:bg-white hover:text-black active:scale-95"
+                      className="cta-primary flex w-full rounded-3xl py-6 text-2xl font-black uppercase tracking-widest text-white"
                     >
                       {offer.ctaText}
                     </a>
