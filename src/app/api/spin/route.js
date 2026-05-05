@@ -34,8 +34,8 @@ export async function POST(request) {
       });
     }
 
-    const existingSpin = await UserSpin.findOne({ userId: spinUserId }).lean();
-    if (existingSpin) {
+    const existingSpin = await UserSpin.findOne({ userId: spinUserId });
+    if (existingSpin && !existingSpin.used) {
       return Response.json(
         {
           error: 'Spin already used',
@@ -65,16 +65,31 @@ export async function POST(request) {
       return Response.json({ error: 'No active spin options configured' }, { status: 400 });
     }
 
-    const userSpin = await UserSpin.create({
-      userId: spinUserId,
-      used: false,
-      rewardLabel: selected.label,
-      discount: {
+    let userSpin = existingSpin;
+    if (userSpin) {
+      userSpin.used = false;
+      userSpin.rewardLabel = selected.label;
+      userSpin.discount = {
         type: selected.type,
         value: selected.value,
         optionId: selected._id,
-      },
-    });
+      };
+      userSpin.orderId = null;
+      userSpin.spunAt = new Date();
+      userSpin.usedAt = null;
+      await userSpin.save();
+    } else {
+      userSpin = await UserSpin.create({
+        userId: spinUserId,
+        used: false,
+        rewardLabel: selected.label,
+        discount: {
+          type: selected.type,
+          value: selected.value,
+          optionId: selected._id,
+        },
+      });
+    }
 
     return Response.json(
       {

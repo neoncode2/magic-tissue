@@ -18,10 +18,11 @@ export async function GET(request) {
     await dbConnect();
     const spin = await UserSpin.findOne({ userId: spinUserId }).lean();
 
+    const hasActiveSpin = Boolean(spin && !spin.used);
     return Response.json({
-      hasSpun: Boolean(spin),
+      hasSpun: hasActiveSpin,
       used: spin?.used || false,
-      reward: spin
+      reward: hasActiveSpin
         ? {
             label: spin.rewardLabel,
             type: spin.discount?.type || 'none',

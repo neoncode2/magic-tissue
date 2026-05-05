@@ -82,10 +82,6 @@ export default function SpinWheelPopup() {
     }
 
     const showPopup = () => {
-      if (localStorage.getItem(`${STORAGE_KEY}:completed`) === 'true') {
-        return;
-      }
-
       if (Math.random() > Number(config.showProbability ?? 0.5)) {
         return;
       }
@@ -153,7 +149,6 @@ export default function SpinWheelPopup() {
             value: reward.value,
           },
         });
-        localStorage.setItem(`${STORAGE_KEY}:completed`, 'true');
         setIsOpen(false);
         const orderSection = document.getElementById('order-form');
         if (orderSection) {
@@ -162,7 +157,6 @@ export default function SpinWheelPopup() {
       }, 3600);
     } catch (spinError) {
       if (spinError.message === 'Spin already used') {
-        localStorage.setItem(`${STORAGE_KEY}:completed`, 'true');
         setStatus((prev) => ({ ...prev, hasSpun: true }));
       }
       setError(spinError.message || 'Spin failed');
@@ -196,7 +190,8 @@ export default function SpinWheelPopup() {
               Close
             </button>
 
-            <div className="relative overflow-hidden border-b border-white/10 bg-[radial-gradient(circle_at_top,#fb718533,transparent_50%),linear-gradient(180deg,#1a0d12,#0b090d)] p-8 lg:border-b-0 lg:border-r">
+            {/* Added hidden lg:block here to hide this left section on mobile devices */}
+            <div className="hidden lg:block relative overflow-hidden border-b border-white/10 bg-[radial-gradient(circle_at_top,#fb718533,transparent_50%),linear-gradient(180deg,#1a0d12,#0b090d)] p-8 lg:border-b-0 lg:border-r">
               {config?.sideImageUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={config.sideImageUrl} alt="Spin reward" className="absolute inset-0 h-full w-full object-cover opacity-30" />
