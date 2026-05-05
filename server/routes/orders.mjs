@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { connectToDatabase } from '../lib/mongoose.mjs';
-import { requireFirebaseUser } from '../middleware/auth.mjs';
+import { requireSpinUser } from '../middleware/auth.mjs';
 import { Order } from '../models/Order.mjs';
 import { SiteConfig } from '../models/SiteConfig.mjs';
 import { UserSpin } from '../models/UserSpin.mjs';
@@ -18,7 +18,7 @@ function validatePayload(payload) {
   return missing;
 }
 
-router.post('/', requireFirebaseUser, async (req, res) => {
+router.post('/', requireSpinUser, async (req, res) => {
   await connectToDatabase();
 
   const missingFields = validatePayload(req.body);

@@ -7,7 +7,7 @@ import { useAuth } from '@/context/AuthContext';
 const SpinContext = createContext(null);
 
 export function SpinProvider({ children }) {
-  const { token, loading: authLoading, isFirebaseReady } = useAuth();
+  const { token, loading: authLoading, isAuthReady } = useAuth();
   const [config, setConfig] = useState(null);
   const [status, setStatus] = useState({
     hasSpun: false,
@@ -47,7 +47,7 @@ export function SpinProvider({ children }) {
         return;
       }
 
-      if (!token || !isFirebaseReady) {
+      if (!token || !isAuthReady) {
         if (!cancelled) {
           setLoading(false);
         }
@@ -80,7 +80,7 @@ export function SpinProvider({ children }) {
     return () => {
       cancelled = true;
     };
-  }, [authLoading, isFirebaseReady, token]);
+  }, [authLoading, isAuthReady, token]);
 
   const value = useMemo(() => ({
     config,

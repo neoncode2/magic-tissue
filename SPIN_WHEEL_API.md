@@ -20,20 +20,13 @@ Add these to `.env.local`:
 
 ```env
 NEXT_PUBLIC_SPIN_API_BASE_URL=http://localhost:4000/api
-NEXT_PUBLIC_FIREBASE_API_KEY=
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=
-NEXT_PUBLIC_FIREBASE_APP_ID=
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
+NEXT_PUBLIC_SPIN_USER_STORAGE_KEY=magic-tissue-spin-user-id
 SPIN_SERVER_PORT=4000
-FIREBASE_PROJECT_ID=
-FIREBASE_CLIENT_EMAIL=
-FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
 ```
 
 ## Frontend Flow
 
-1. Firebase anonymous auth starts automatically.
+1. Client creates a local `spin-user-*` id and stores it in browser local storage.
 2. Spin popup appears only when:
    - popup is enabled
    - user has not spun before
@@ -69,7 +62,7 @@ Public wheel config:
 ```
 
 ### `GET /api/spin/me`
-Protected with Firebase Bearer token.
+Protected with `Authorization: Bearer spin-user-*` token.
 
 Response:
 
@@ -86,7 +79,7 @@ Response:
 ```
 
 ### `POST /api/spin`
-Protected with Firebase Bearer token.
+Protected with `Authorization: Bearer spin-user-*` token.
 
 Returns selected reward:
 
@@ -103,7 +96,7 @@ Returns selected reward:
 ```
 
 ### `POST /api/orders`
-Protected with Firebase Bearer token.
+Protected with `Authorization: Bearer spin-user-*` token.
 
 Request:
 

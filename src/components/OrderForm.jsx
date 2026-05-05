@@ -33,7 +33,7 @@ function calculatePreviewDiscount(price, reward) {
 
 export default function OrderForm() {
   const { config } = useSiteConfig();
-  const { token, isFirebaseReady } = useAuth();
+  const { token, isAuthReady, loading: authLoading } = useAuth();
   const { status: spinStatus, setStatus: setSpinStatus } = useSpin();
   const initialPackage = config.packages[0];
   const [selected, setSelected] = useState(initialPackage);
@@ -61,8 +61,8 @@ export default function OrderForm() {
     setServerSummary(null);
 
     try {
-      if (!token || !isFirebaseReady) {
-        throw new Error('Firebase authentication is not ready yet');
+      if (!token || !isAuthReady) {
+        throw new Error('Spin session is not ready yet');
       }
 
       const data = await submitSpinOrder(token, {
@@ -244,9 +244,9 @@ export default function OrderForm() {
               {status === 'error' && errorMessage ? (
                 <p className="mt-4 text-center text-sm font-semibold text-rose-300">{errorMessage}</p>
               ) : null}
-              {!isFirebaseReady ? (
+              {!authLoading && !isAuthReady ? (
                 <p className="mt-4 text-center text-sm text-amber-200/80">
-                  Firebase env missing. Spin discount checkout needs Firebase anonymous auth configuration.
+                  Preparing your spin session. Please wait a moment.
                 </p>
               ) : null}
             </form>

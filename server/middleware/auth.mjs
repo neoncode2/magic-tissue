@@ -1,18 +1,16 @@
-import { getFirebaseAdmin } from '../lib/firebase-admin.mjs';
-
-export async function requireFirebaseUser(req, res, next) {
+export async function requireSpinUser(req, res, next) {
   const authHeader = req.headers.authorization || '';
   const [, token] = authHeader.split(' ');
+  const spinUserId = String(token || '').trim();
 
-  if (!token) {
-    return res.status(401).json({ error: 'Missing Firebase token' });
+  if (!spinUserId) {
+    return res.status(401).json({ error: 'Missing spin session token' });
   }
 
-  try {
-    const decoded = await getFirebaseAdmin().auth().verifyIdToken(token);
-    req.user = decoded;
-    return next();
-  } catch (error) {
-    return res.status(401).json({ error: 'Invalid Firebase token', details: error.message });
+  if (!/^spin-user-[a-zA-Z0-9-]+$/.test(spinUserId)) {
+    return res.status(401).json({ error: 'Invalid spin session token' });
   }
+
+  req.user = { uid: spinUserId };
+  return next();
 }

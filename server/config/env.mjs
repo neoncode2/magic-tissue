@@ -36,11 +36,3 @@ export function getMongoUri() {
 export function getServerPort() {
   return Number(process.env.SPIN_SERVER_PORT || 4000);
 }
-
-export function getFirebaseAdminConfig() {
-  return {
-    projectId: getRequiredEnv('FIREBASE_PROJECT_ID'),
-    clientEmail: getRequiredEnv('FIREBASE_CLIENT_EMAIL'),
-    privateKey: getRequiredEnv('FIREBASE_PRIVATE_KEY').replace(/\\n/g, '\n'),
-  };
-}

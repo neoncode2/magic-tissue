@@ -43,7 +43,7 @@ function playSpinTone() {
 }
 
 export default function SpinWheelPopup() {
-  const { token, isFirebaseReady } = useAuth();
+  const { token, isAuthReady } = useAuth();
   const { config, status, setStatus } = useSpin();
   const [isOpen, setIsOpen] = useState(false);
   const [isSpinning, setIsSpinning] = useState(false);
@@ -71,7 +71,7 @@ export default function SpinWheelPopup() {
   }, [options, segmentSize]);
 
   useEffect(() => {
-    if (!config?.popupEnabled || status.hasSpun || !isFirebaseReady) {
+    if (!config?.popupEnabled || status.hasSpun || !isAuthReady) {
       return undefined;
     }
 
@@ -118,7 +118,7 @@ export default function SpinWheelPopup() {
       }
       window.removeEventListener('mouseout', onExitIntent);
     };
-  }, [config, isFirebaseReady, status.hasSpun]);
+  }, [config, isAuthReady, status.hasSpun]);
 
   async function handleSpin() {
     if (!token || isSpinning || options.length === 0) {

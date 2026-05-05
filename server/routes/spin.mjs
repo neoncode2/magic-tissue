@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { connectToDatabase } from '../lib/mongoose.mjs';
-import { requireFirebaseUser } from '../middleware/auth.mjs';
+import { requireSpinUser } from '../middleware/auth.mjs';
 import { SpinConfig } from '../models/SpinConfig.mjs';
 import { SpinOption } from '../models/SpinOption.mjs';
 import { UserSpin } from '../models/UserSpin.mjs';
@@ -66,7 +66,7 @@ router.get('/config', async (_req, res) => {
   });
 });
 
-router.get('/me', requireFirebaseUser, async (req, res) => {
+router.get('/me', requireSpinUser, async (req, res) => {
   await connectToDatabase();
   const spin = await UserSpin.findOne({ userId: req.user.uid }).lean();
 
@@ -83,7 +83,7 @@ router.get('/me', requireFirebaseUser, async (req, res) => {
   });
 });
 
-router.post('/', requireFirebaseUser, async (req, res) => {
+router.post('/', requireSpinUser, async (req, res) => {
   await connectToDatabase();
   const existingSpin = await UserSpin.findOne({ userId: req.user.uid }).lean();
 
