@@ -7,6 +7,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useSpin } from '@/context/SpinContext';
 
 const STORAGE_KEY = process.env.NEXT_PUBLIC_SPIN_WHEEL_STORAGE_KEY || 'magic-tissue-spin-popup-v1';
+const REAPPEAR_INTERVAL_MS = 30_000;
 
 function randomBetween(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -51,6 +52,7 @@ export default function SpinWheelPopup() {
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
   const timeoutRef = useRef(null);
+  const intervalRef = useRef(null);
   const confetti = useMemo(() => createConfetti(), []);
 
   const options = useMemo(() => config?.options || [], [config?.options]);
@@ -79,34 +81,33 @@ export default function SpinWheelPopup() {
       return undefined;
     }
 
-    if (localStorage.getItem(`${STORAGE_KEY}:completed`) === 'true') {
-      return undefined;
-    }
+    const showPopup = () => {
+      if (localStorage.getItem(`${STORAGE_KEY}:completed`) === 'true') {
+        return;
+      }
 
-    const seenAlready = localStorage.getItem(`${STORAGE_KEY}:seen`) === 'true';
+      if (Math.random() > Number(config.showProbability ?? 0.5)) {
+        return;
+      }
 
-    if (seenAlready) {
-      return undefined;
-    }
-
-    if (Math.random() > Number(config.showProbability ?? 0.5)) {
-      return undefined;
-    }
+      setIsOpen(true);
+    };
 
     const delay = randomBetween(Number(config.minDelaySeconds || 5), Number(config.maxDelaySeconds || 20)) * 1000;
-    timeoutRef.current = window.setTimeout(() => {
-      setIsOpen(true);
-      localStorage.setItem(`${STORAGE_KEY}:seen`, 'true');
-    }, delay);
+    timeoutRef.current = window.setTimeout(showPopup, delay);
+    intervalRef.current = window.setInterval(() => {
+      if (!isOpen && !isSpinning && !result) {
+        showPopup();
+      }
+    }, REAPPEAR_INTERVAL_MS);
 
     function onExitIntent(event) {
       if (event.clientY > 24 || !config.exitIntentEnabled) {
         return;
       }
 
-      if (!localStorage.getItem(`${STORAGE_KEY}:seen`)) {
+      if (!isOpen && !isSpinning && !result) {
         setIsOpen(true);
-        localStorage.setItem(`${STORAGE_KEY}:seen`, 'true');
       }
     }
 
@@ -116,9 +117,12 @@ export default function SpinWheelPopup() {
       if (timeoutRef.current) {
         window.clearTimeout(timeoutRef.current);
       }
+      if (intervalRef.current) {
+        window.clearInterval(intervalRef.current);
+      }
       window.removeEventListener('mouseout', onExitIntent);
     };
-  }, [config, isAuthReady, status.hasSpun]);
+  }, [config, isAuthReady, isOpen, isSpinning, result, status.hasSpun]);
 
   async function handleSpin() {
     if (!token || isSpinning || options.length === 0) {
@@ -150,8 +154,17 @@ export default function SpinWheelPopup() {
           },
         });
         localStorage.setItem(`${STORAGE_KEY}:completed`, 'true');
+        setIsOpen(false);
+        const orderSection = document.getElementById('order-form');
+        if (orderSection) {
+          orderSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
       }, 3600);
     } catch (spinError) {
+      if (spinError.message === 'Spin already used') {
+        localStorage.setItem(`${STORAGE_KEY}:completed`, 'true');
+        setStatus((prev) => ({ ...prev, hasSpun: true }));
+      }
       setError(spinError.message || 'Spin failed');
     } finally {
       window.setTimeout(() => {
@@ -198,6 +211,9 @@ export default function SpinWheelPopup() {
                 <p className="mt-4 max-w-md text-sm leading-7 text-white/70 md:text-base">
                   {config?.popupSubtitle || 'Try your luck once and unlock a verified reward for checkout.'}
                 </p>
+                <div className="mt-4 inline-flex rounded-full border border-amber-300/30 bg-amber-300/10 px-4 py-1 text-xs font-black uppercase tracking-[0.2em] text-amber-200">
+                  Every 30s a new chance appears
+                </div>
 
                 <div className="mt-8 grid gap-3 sm:grid-cols-2">
                   {options.slice(0, 4).map((option) => (
@@ -247,7 +263,7 @@ export default function SpinWheelPopup() {
                 type="button"
                 onClick={handleSpin}
                 disabled={!token || isSpinning}
-                className="mt-8 rounded-full bg-gradient-to-r from-rose-600 via-red-500 to-orange-400 px-10 py-4 text-sm font-black uppercase tracking-[0.25em] text-white shadow-[0_20px_45px_rgba(244,63,94,0.35)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
+                className="mt-8 rounded-full bg-gradient-to-r from-fuchsia-600 via-rose-500 to-orange-400 px-12 py-4 text-sm font-black uppercase tracking-[0.25em] text-white shadow-[0_20px_45px_rgba(244,63,94,0.4)] transition hover:scale-[1.02] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isSpinning ? 'Spinning...' : config?.popupButtonText || 'Spin Now'}
               </button>

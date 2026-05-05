@@ -4,8 +4,6 @@ import { createContext, useContext, useMemo, useSyncExternalStore } from 'react'
 
 const AuthContext = createContext(null);
 const STORAGE_KEY = process.env.NEXT_PUBLIC_SPIN_USER_STORAGE_KEY || 'magic-tissue-spin-user-id';
-let cachedClientSession = null;
-const serverSessionSnapshot = { user: null, token: '', loading: true };
 
 function createSpinUserId() {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
@@ -16,14 +14,10 @@ function createSpinUserId() {
 }
 
 function getServerSessionSnapshot() {
-  return serverSessionSnapshot;
+  return '';
 }
 
 function getClientSessionSnapshot() {
-  if (cachedClientSession) {
-    return cachedClientSession;
-  }
-
   let spinUserId = localStorage.getItem(STORAGE_KEY);
 
   if (!spinUserId) {
@@ -31,13 +25,7 @@ function getClientSessionSnapshot() {
     localStorage.setItem(STORAGE_KEY, spinUserId);
   }
 
-  cachedClientSession = {
-    user: { uid: spinUserId },
-    token: spinUserId,
-    loading: false,
-  };
-
-  return cachedClientSession;
+  return spinUserId;
 }
 
 function subscribeToSessionChanges() {
@@ -45,15 +33,15 @@ function subscribeToSessionChanges() {
 }
 
 export function AuthProvider({ children }) {
-  const session = useSyncExternalStore(subscribeToSessionChanges, getClientSessionSnapshot, getServerSessionSnapshot);
-  const { user, token, loading } = session;
+  const token = useSyncExternalStore(subscribeToSessionChanges, getClientSessionSnapshot, getServerSessionSnapshot);
+  const loading = token.length === 0;
 
   const value = useMemo(() => ({
-    user,
+    user: token ? { uid: token } : null,
     token,
     loading,
     isAuthReady: !loading && Boolean(token),
-  }), [loading, token, user]);
+  }), [loading, token]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

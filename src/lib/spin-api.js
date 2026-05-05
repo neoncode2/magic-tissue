@@ -1,7 +1,25 @@
-const baseUrl = (process.env.NEXT_PUBLIC_SPIN_API_BASE_URL || 'http://localhost:4000/api').replace(/\/$/, '');
+const baseUrl = (process.env.NEXT_PUBLIC_SPIN_API_BASE_URL || '/api').replace(/\/$/, '');
 
 async function request(path, options = {}) {
-  const response = await fetch(`${baseUrl}${path}`, options);
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10_000);
+  let response;
+
+  try {
+    response = await fetch(`${baseUrl}${path}`, {
+      ...options,
+      signal: controller.signal,
+    });
+  } catch (error) {
+    if (error?.name === 'AbortError') {
+      throw new Error('Spin server timeout. Please try again.');
+    }
+
+    throw new Error('Spin server unreachable. Please ensure backend is running on port 4000.');
+  } finally {
+    clearTimeout(timeout);
+  }
+
   const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
@@ -36,7 +54,7 @@ export function spinOnce(token) {
 }
 
 export function submitSpinOrder(token, payload) {
-  return request('/orders', {
+  return request('/spin-orders', {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${token}`,

@@ -18,7 +18,7 @@ const fallbackReviews = [
 
 export default function Reviews() {
   const [reviews, setReviews] = useState(fallbackReviews);
-  const enableLoop = reviews.length >= 1;
+  const enableLoop = reviews.length >= 3;
 
   useEffect(() => {
     let cancelled = false;
