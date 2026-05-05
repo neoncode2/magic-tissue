@@ -1,11 +1,20 @@
 'use client';
 
 import { useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 
 const inputClass =
   'w-full rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white outline-none transition focus:border-rose-500 focus:bg-black/50';
 
+function safeNextPath(raw) {
+  if (typeof raw !== 'string' || !raw.startsWith('/') || raw.startsWith('//')) {
+    return '/admin';
+  }
+  return raw;
+}
+
 export default function AdminLogin({ needsSetup = false, dbError = '' }) {
+  const searchParams = useSearchParams();
   const [tab, setTab] = useState(needsSetup ? 'create' : 'login');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
@@ -33,7 +42,8 @@ export default function AdminLogin({ needsSetup = false, dbError = '' }) {
         throw new Error(data.error || 'Login failed');
       }
 
-      window.location.href = '/admin';
+      const next = safeNextPath(searchParams.get('next') || '');
+      window.location.href = next;
     } catch (error) {
       setMessage(error.message);
     } finally {
@@ -80,7 +90,7 @@ export default function AdminLogin({ needsSetup = false, dbError = '' }) {
     <div className="mx-auto grid min-h-screen max-w-7xl items-center gap-10 px-6 py-5 lg:grid-cols-[1.15fr_0.85fr]">
       <div className="space-y-8">
         <div className="inline-flex rounded-full border border-rose-500/20 bg-rose-500/10 px-4 py-2 text-xs font-black uppercase tracking-[0.28em] text-rose-400">
-          Magic Tissue Admin
+        EVER GLOW FACE  PACK Admin
         </div>
         <div className="space-y-5">
           <h1 className="max-w-3xl text-4xl font-black leading-none text-white md:text-6xl">

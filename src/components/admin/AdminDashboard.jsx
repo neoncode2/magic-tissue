@@ -6,11 +6,12 @@ import { mergeSiteConfig, siteDefaults } from '@/lib/siteDefaults';
 const navItems = [
   ['overview', 'Overview'],
   ['content', 'Hero & Media'],
+  ['orders', 'Orders'],
   ['benefits', 'Benefits'],
+  ['features', 'Features'],
   ['offer', 'Offer'],
   ['packages', 'Packages'],
   ['reviews', 'Reviews'],
-  ['orders', 'Orders'],
   ['products', 'Products'],
   ['faqs', 'FAQ'],
   ['admins', 'Admins'],
@@ -30,6 +31,16 @@ function money(value) {
 
 function linesToArray(value) {
   return value.split('\n').map((item) => item.trim()).filter(Boolean);
+}
+
+// এই নতুন ফাংশনটি iframe থেকে শুধু URL বের করে আনবে
+function extractIframeSrc(input) {
+  if (!input) return '';
+  if (input.includes('<iframe') && input.includes('src=')) {
+    const match = input.match(/src=["'](.*?)["']/);
+    return match ? match[1] : input;
+  }
+  return input;
 }
 
 function StatCard({ label, value }) {
@@ -131,8 +142,16 @@ export default function AdminDashboard({ admin }) {
   const [masterKey, setMasterKey] = useState('');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(true);
-  const [newProduct, setNewProduct] = useState({ name: '', description: 'Magic Tissue', price: 0, discount: 0, image: '' });
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [newProduct, setNewProduct] = useState({ name: '', description: 'EVER GLOW FACE PACK', price: 0, discount: 0, image: '' });
   const [newFaq, setNewFaq] = useState({ question: '', answer: '', order: 0, active: true });
+  const [newReview, setNewReview] = useState({
+    name: 'ভেরিফায়েড গ্রাহক',
+    rating: 5,
+    comment: '',
+    image: '',
+    verified: true,
+  });
 
   async function loadAll() {
     setLoading(true);
@@ -156,7 +175,7 @@ export default function AdminDashboard({ admin }) {
       setFaqs(data[5]);
       setAdmins(data[6]);
     } catch {
-      setMessage('Dashboard load করা যায়নি।');
+      setMessage('Dashboard load করা যায়নি।');
     } finally {
       setLoading(false);
     }
@@ -204,7 +223,46 @@ export default function AdminDashboard({ admin }) {
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || 'Config save failed');
     setSiteConfig(mergeSiteConfig(data.config));
-    setMessage('Site content updated হয়েছে।');
+    setMessage('Site content updated হয়েছে।');
+  }
+
+  async function uploadImageToImgbb(file) {
+    const key = process.env.NEXT_PUBLIC_IMGBB_API_KEY?.trim();
+    if (!key) {
+      throw new Error('NEXT_PUBLIC_IMGBB_API_KEY env missing');
+    }
+
+    const body = new FormData();
+    body.append('image', file);
+
+    const response = await fetch(`https://api.imgbb.com/1/upload?key=${key}`, {
+      method: 'POST',
+      body,
+    });
+
+    const data = await response.json();
+    if (!response.ok || !data?.success || !data?.data?.url) {
+      throw new Error(data?.error?.message || 'Image upload failed');
+    }
+
+    return data.data.url;
+  }
+
+  async function handleLocalImageUpload(file, onDone) {
+    if (!file) return;
+
+    setIsUploadingImage(true);
+    setMessage('Image upload হচ্ছে...');
+
+    try {
+      const url = await uploadImageToImgbb(file);
+      onDone(url);
+      setMessage('Image upload complete.');
+    } catch (error) {
+      setMessage(error.message || 'Image upload failed');
+    } finally {
+      setIsUploadingImage(false);
+    }
   }
 
   async function handleLogout() {
@@ -221,7 +279,7 @@ export default function AdminDashboard({ admin }) {
       <div className="mx-auto grid min-h-screen max-w-[1600px] gap-6 px-4 py-4 lg:grid-cols-[280px_minmax(0,1fr)] lg:px-6">
         <aside className="rounded-[32px] border border-white/10 bg-[#101010] p-5 shadow-[0_25px_80px_rgba(0,0,0,0.35)]">
           <div className="rounded-[26px] border border-rose-500/20 bg-gradient-to-br from-rose-600/15 to-transparent p-5">
-            <div className="text-xs font-black uppercase tracking-[0.25em] text-rose-400">Magic Tissue</div>
+            <div className="text-xs font-black uppercase tracking-[0.25em] text-rose-400">EVER GLOW FACE PACK</div>
             <h1 className="mt-3 text-2xl font-black text-white">Admin Dashboard</h1>
             <p className="mt-3 text-sm leading-6 text-gray-400">
               {admin.displayName || admin.username}
@@ -250,6 +308,13 @@ export default function AdminDashboard({ admin }) {
             <input value={masterKey} onChange={(event) => setMasterKey(event.target.value)} type="password" className={inputClass} placeholder="Create admin এর জন্য" />
           </div>
 
+          <a
+            href="/dashboard/settings"
+            className="mt-4 flex w-full items-center justify-center rounded-2xl border border-rose-500/30 bg-rose-600/10 px-4 py-3 text-sm font-black uppercase tracking-[0.16em] text-rose-200 transition hover:bg-rose-600/20"
+          >
+            Meta Pixel &amp; CAPI
+          </a>
+
           <button type="button" onClick={handleLogout} className="mt-6 w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-black uppercase tracking-[0.2em] text-white transition hover:bg-white/[0.08]">
             Logout
           </button>
@@ -270,6 +335,7 @@ export default function AdminDashboard({ admin }) {
               </div>
             </div>
             {message ? <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-gray-300">{message}</div> : null}
+            {isUploadingImage ? <div className="mt-3 text-xs font-bold uppercase tracking-[0.16em] text-amber-300">Uploading image to ImageBB...</div> : null}
           </header>
 
           {active === 'overview' && overview ? (
@@ -307,15 +373,141 @@ export default function AdminDashboard({ admin }) {
             <div className="space-y-6">
               <Section
                 title="Hero Content"
-                copy="Headline, subtext, warning banner and video embed URL"
+                copy="Headline, subtext, warning banner, YouTube/Facebook video URL এবং Hero BG image। Meta Pixel + Conversion API: সাইডবারের Meta Pixel & CAPI লিঙ্ক।"
                 action={<button type="button" onClick={saveSiteConfig} className="rounded-2xl bg-rose-600 px-5 py-3 text-sm font-black uppercase tracking-[0.18em]">Save Changes</button>}
               >
                 <div className="grid gap-4 md:grid-cols-2">
                   <input className={inputClass} value={siteConfig.hero.badge} onChange={(event) => setSiteConfig((prev) => ({ ...prev, hero: { ...prev.hero, badge: event.target.value } }))} placeholder="Badge" />
-                  <input className={inputClass} value={siteConfig.hero.videoEmbedUrl} onChange={(event) => setSiteConfig((prev) => ({ ...prev, hero: { ...prev.hero, videoEmbedUrl: event.target.value } }))} placeholder="YouTube embed URL" />
+                  
+                  <div className="col-span-1 flex flex-col gap-2 md:col-span-2">
+                    <input 
+                      className={inputClass} 
+                      value={siteConfig.hero.videoEmbedUrl} 
+                      onChange={(event) => {
+                        const rawValue = event.target.value;
+                        const extractedUrl = extractIframeSrc(rawValue);
+                        setSiteConfig((prev) => ({ ...prev, hero: { ...prev.hero, videoEmbedUrl: extractedUrl } }));
+                      }} 
+                      placeholder="YouTube/Facebook video Embed URL (অথবা পুরো iframe কোড পেস্ট করুন)" 
+                    />
+                    {siteConfig.hero.videoEmbedUrl && (
+                      <div className="mt-2 aspect-video w-full max-w-sm overflow-hidden rounded-xl border border-white/10 bg-black/40">
+                        <iframe 
+                          src={siteConfig.hero.videoEmbedUrl} 
+                          className="h-full w-full" 
+                          allowFullScreen
+                        ></iframe>
+                      </div>
+                    )}
+                  </div>
+
+                  <input className={inputClass} value={siteConfig.hero.backgroundImage || ''} onChange={(event) => setSiteConfig((prev) => ({ ...prev, hero: { ...prev.hero, backgroundImage: event.target.value } }))} placeholder="Hero background image URL" />
                   <input className={inputClass} value={siteConfig.hero.title} onChange={(event) => setSiteConfig((prev) => ({ ...prev, hero: { ...prev.hero, title: event.target.value } }))} placeholder="Main title" />
                   <input className={inputClass} value={siteConfig.hero.highlight} onChange={(event) => setSiteConfig((prev) => ({ ...prev, hero: { ...prev.hero, highlight: event.target.value } }))} placeholder="Highlight title" />
                 </div>
+                <div className="mt-4 flex flex-wrap items-center gap-3">
+                  <label className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-white">
+                    Upload Hero BG
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(event) => {
+                        const file = event.target.files?.[0];
+                        handleLocalImageUpload(file, (url) => {
+                          setSiteConfig((prev) => ({ ...prev, hero: { ...prev.hero, backgroundImage: url } }));
+                        });
+                        event.target.value = '';
+                      }}
+                    />
+                  </label>
+                  <span className="text-xs text-gray-400">ImageBB থেকে URL auto set হবে</span>
+                </div>
+
+                <div className="mt-6 rounded-[24px] border border-white/10 bg-black/20 p-4">
+                  <h3 className="text-sm font-black uppercase tracking-[0.16em] text-gray-400">Hero 3D carousel images</h3>
+                  <p className="mt-2 text-xs leading-5 text-gray-500">
+                    হোমপেজের শুধু Hero ক্যারোসেলের স্লাইডগুলো এখান থেকে URL দিন বা আপলোড করুন। Save Changes চাপতে ভুলবেন না।
+                  </p>
+                  <div className="mt-4 space-y-4">
+                    {(siteConfig.hero.carouselImages || []).map((url, index) => (
+                      <div key={`${url}-${index}`} className="grid gap-3 rounded-[20px] border border-white/10 bg-black/30 p-3 md:grid-cols-[1fr_auto_auto] md:items-center">
+                        <input
+                          className={inputClass}
+                          value={url}
+                          onChange={(event) =>
+                            setSiteConfig((prev) => ({
+                              ...prev,
+                              hero: {
+                                ...prev.hero,
+                                carouselImages: (prev.hero.carouselImages || []).map((item, itemIndex) =>
+                                  itemIndex === index ? event.target.value : item
+                                ),
+                              },
+                            }))
+                          }
+                          placeholder="Carousel image URL"
+                        />
+                        <label className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-center text-sm font-bold text-white">
+                          Upload
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(event) => {
+                              const file = event.target.files?.[0];
+                              handleLocalImageUpload(file, (uploadedUrl) => {
+                                setSiteConfig((prev) => ({
+                                  ...prev,
+                                  hero: {
+                                    ...prev.hero,
+                                    carouselImages: (prev.hero.carouselImages || []).map((item, itemIndex) =>
+                                      itemIndex === index ? uploadedUrl : item
+                                    ),
+                                  },
+                                }));
+                              });
+                              event.target.value = '';
+                            }}
+                          />
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setSiteConfig((prev) => ({
+                              ...prev,
+                              hero: {
+                                ...prev.hero,
+                                carouselImages: (prev.hero.carouselImages || []).filter((_, itemIndex) => itemIndex !== index),
+                              },
+                            }))
+                          }
+                          className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-bold text-white"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                    <div className="flex flex-wrap gap-3">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setSiteConfig((prev) => ({
+                            ...prev,
+                            hero: {
+                              ...prev.hero,
+                              carouselImages: [...(prev.hero.carouselImages || []), ''],
+                            },
+                          }))
+                        }
+                        className="rounded-2xl border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-bold text-white"
+                      >
+                        Add carousel image
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
                 <textarea className={`${inputClass} mt-4 min-h-28`} value={siteConfig.hero.subtitle} onChange={(event) => setSiteConfig((prev) => ({ ...prev, hero: { ...prev.hero, subtitle: event.target.value } }))} placeholder="Subtitle" />
                 <textarea className={`${inputClass} mt-4 min-h-24`} value={siteConfig.hero.warningText} onChange={(event) => setSiteConfig((prev) => ({ ...prev, hero: { ...prev.hero, warningText: event.target.value } }))} placeholder="Warning text" />
               </Section>
@@ -341,11 +533,134 @@ export default function AdminDashboard({ admin }) {
           {active === 'benefits' ? (
             <Section
               title="Benefits Section"
-              copy="উপকারিতা section heading এবং list"
+              copy="উপকারিতা section এর টাইটেল এবং লিস্ট এডিট করুন"
               action={<button type="button" onClick={saveSiteConfig} className="rounded-2xl bg-rose-600 px-5 py-3 text-sm font-black uppercase tracking-[0.18em]">Save Benefits</button>}
             >
               <input className={inputClass} value={siteConfig.benefits.title} onChange={(event) => setSiteConfig((prev) => ({ ...prev, benefits: { ...prev.benefits, title: event.target.value } }))} placeholder="Benefits title" />
               <textarea className={`${inputClass} mt-4 min-h-64`} value={siteConfig.benefits.items.join('\n')} onChange={(event) => setSiteConfig((prev) => ({ ...prev, benefits: { ...prev.benefits, items: linesToArray(event.target.value) } }))} placeholder="প্রতি লাইনে একটি item লিখুন" />
+            </Section>
+          ) : null}
+
+          {active === 'features' ? (
+            <Section
+              title="Features Section (cards)"
+              copy="হোমপেজের #features গ্রিড — eyebrow, মেইন টাইটেল এবং প্রতিটি কার্ডের শিরোনাম, বর্ণনা, আইকন (ইমোজি) এডিট করুন"
+              action={<button type="button" onClick={saveSiteConfig} className="rounded-2xl bg-rose-600 px-5 py-3 text-sm font-black uppercase tracking-[0.18em]">Save Features</button>}
+            >
+              <div className="grid gap-4 md:grid-cols-2">
+                <input
+                  className={inputClass}
+                  value={siteConfig.features?.eyebrow ?? ''}
+                  onChange={(event) =>
+                    setSiteConfig((prev) => ({
+                      ...prev,
+                      features: { ...(prev.features || siteDefaults.features), eyebrow: event.target.value },
+                    }))
+                  }
+                  placeholder="Eyebrow (উপরের ছোট লেবেল)"
+                />
+                <input
+                  className={inputClass}
+                  value={siteConfig.features?.title ?? ''}
+                  onChange={(event) =>
+                    setSiteConfig((prev) => ({
+                      ...prev,
+                      features: { ...(prev.features || siteDefaults.features), title: event.target.value },
+                    }))
+                  }
+                  placeholder="Section মেইন টাইটেল"
+                />
+              </div>
+              <div className="mt-6 space-y-4">
+                {(siteConfig.features?.items || []).map((item, index) => (
+                  <div key={item.id || index} className="grid gap-3 rounded-[24px] border border-white/10 bg-black/20 p-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)_80px_auto] md:items-end">
+                    <input
+                      className={inputClass}
+                      value={item.title}
+                      onChange={(event) =>
+                        setSiteConfig((prev) => ({
+                          ...prev,
+                          features: {
+                            ...(prev.features || siteDefaults.features),
+                            items: (prev.features?.items || []).map((row, i) =>
+                              i === index ? { ...row, title: event.target.value } : row
+                            ),
+                          },
+                        }))
+                      }
+                      placeholder="কার্ড শিরোনাম"
+                    />
+                    <input
+                      className={inputClass}
+                      value={item.desc}
+                      onChange={(event) =>
+                        setSiteConfig((prev) => ({
+                          ...prev,
+                          features: {
+                            ...(prev.features || siteDefaults.features),
+                            items: (prev.features?.items || []).map((row, i) =>
+                              i === index ? { ...row, desc: event.target.value } : row
+                            ),
+                          },
+                        }))
+                      }
+                      placeholder="বর্ণনা"
+                    />
+                    <input
+                      className={inputClass}
+                      value={item.icon}
+                      onChange={(event) =>
+                        setSiteConfig((prev) => ({
+                          ...prev,
+                          features: {
+                            ...(prev.features || siteDefaults.features),
+                            items: (prev.features?.items || []).map((row, i) =>
+                              i === index ? { ...row, icon: event.target.value } : row
+                            ),
+                          },
+                        }))
+                      }
+                      placeholder="⚡"
+                      maxLength={8}
+                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setSiteConfig((prev) => ({
+                          ...prev,
+                          features: {
+                            ...(prev.features || siteDefaults.features),
+                            items: (prev.features?.items || []).filter((_, i) => i !== index),
+                          },
+                        }))
+                      }
+                      className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-bold text-white"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+                <div className="flex flex-wrap gap-3">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setSiteConfig((prev) => ({
+                        ...prev,
+                        features: {
+                          ...(prev.features || siteDefaults.features),
+                          items: [
+                            ...(prev.features?.items || []),
+                            { id: `feat-${Date.now()}`, title: '', desc: '', icon: '✨' },
+                          ],
+                        },
+                      }))
+                    }
+                    className="rounded-2xl border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-bold text-white"
+                  >
+                    Add card
+                  </button>
+                </div>
+              </div>
             </Section>
           ) : null}
 
@@ -364,6 +679,24 @@ export default function AdminDashboard({ admin }) {
                 <input className={inputClass} type="number" value={siteConfig.offer.salePrice} onChange={(event) => setSiteConfig((prev) => ({ ...prev, offer: { ...prev.offer, salePrice: Number(event.target.value) } }))} placeholder="Sale price" />
                 <input className={inputClass} type="number" value={siteConfig.offer.countdownMinutes} onChange={(event) => setSiteConfig((prev) => ({ ...prev, offer: { ...prev.offer, countdownMinutes: Number(event.target.value) } }))} placeholder="Timer minutes" />
                 <input className={inputClass} value={siteConfig.offer.ctaText} onChange={(event) => setSiteConfig((prev) => ({ ...prev, offer: { ...prev.offer, ctaText: event.target.value } }))} placeholder="CTA text" />
+              </div>
+              <div className="mt-4 flex items-center gap-3">
+                <label className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-white">
+                  Upload Offer Image
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(event) => {
+                      const file = event.target.files?.[0];
+                      handleLocalImageUpload(file, (url) => {
+                        setSiteConfig((prev) => ({ ...prev, offer: { ...prev.offer, backgroundImage: url } }));
+                      });
+                      event.target.value = '';
+                    }}
+                  />
+                </label>
+                <span className="text-xs text-gray-400">Offer image ImageBB URL দিয়ে auto fill হবে</span>
               </div>
               <textarea className={`${inputClass} mt-4 min-h-24`} value={siteConfig.offer.stockText} onChange={(event) => setSiteConfig((prev) => ({ ...prev, offer: { ...prev.offer, stockText: event.target.value } }))} placeholder="Urgency text" />
               <textarea className={`${inputClass} mt-4 min-h-28`} value={siteConfig.offer.benefitBullets.join('\n')} onChange={(event) => setSiteConfig((prev) => ({ ...prev, offer: { ...prev.offer, benefitBullets: linesToArray(event.target.value) } }))} placeholder="প্রতি লাইনে একটি benefit লিখুন" />
@@ -391,29 +724,217 @@ export default function AdminDashboard({ admin }) {
           ) : null}
 
           {active === 'reviews' ? (
-            <Section title="Reviews Approval" copy="Approve করলে public UI-তে review show হবে">
+            <Section
+              title="রিভিউ স্ক্রিনশট (#reviews)"
+              copy="হোমপেজের রিভিউ স্লাইডারের ছবি এখানে URL দিন বা ফাইল আপলোড করুন। “Verified” থাকলে সাইটে দেখা যাবে।"
+            >
+              <div className="mb-8 grid gap-6 rounded-[24px] border border-dashed border-white/10 bg-black/20 p-4 lg:grid-cols-[minmax(0,200px)_1fr]">
+                <div className="flex flex-col gap-2">
+                  <span className="text-xs font-bold uppercase tracking-[0.16em] text-gray-500">প্রিভিউ</span>
+                  <div className="relative aspect-[4/5] w-full max-w-[200px] overflow-hidden rounded-2xl border border-white/10 bg-black/40">
+                    {newReview.image ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={newReview.image} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <div className="flex h-full min-h-[160px] items-center justify-center p-3 text-center text-xs text-gray-500">
+                        আপলোড বা URL দিলে এখানে দেখা যাবে
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <input
+                    className={inputClass}
+                    value={newReview.name}
+                    onChange={(event) => setNewReview((prev) => ({ ...prev, name: event.target.value }))}
+                    placeholder="নাম (যেমন: ভেরিফায়েড গ্রাহক)"
+                  />
+                  <input
+                    className={inputClass}
+                    type="number"
+                    min="1"
+                    max="5"
+                    value={newReview.rating}
+                    onChange={(event) => setNewReview((prev) => ({ ...prev, rating: Number(event.target.value) }))}
+                    placeholder="রেটিং ১–৫"
+                  />
+                  <input
+                    className={`${inputClass} md:col-span-2`}
+                    value={newReview.comment}
+                    onChange={(event) => setNewReview((prev) => ({ ...prev, comment: event.target.value }))}
+                    placeholder="কমেন্ট (ঐচ্ছিক — শুধু স্ক্রিনশট হলে খালি রাখতে পারেন)"
+                  />
+                  <div className="flex flex-col gap-3 md:col-span-2">
+                    <input
+                      className={inputClass}
+                      value={newReview.image}
+                      onChange={(event) => setNewReview((prev) => ({ ...prev, image: event.target.value }))}
+                      placeholder="রিভিউ স্ক্রিনশটের ইমেজ URL"
+                    />
+                    <div className="flex flex-wrap items-center gap-3">
+                      <label className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-bold text-white">
+                        ছবি আপলোড
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          disabled={isUploadingImage}
+                          onChange={(event) => {
+                            const file = event.target.files?.[0];
+                            handleLocalImageUpload(file, (url) => {
+                              setNewReview((prev) => ({ ...prev, image: url }));
+                            });
+                            event.target.value = '';
+                          }}
+                        />
+                      </label>
+                      <label className="flex items-center gap-2 text-xs text-gray-300">
+                        <input
+                          type="checkbox"
+                          checked={newReview.verified}
+                          onChange={(event) => setNewReview((prev) => ({ ...prev, verified: event.target.checked }))}
+                        />
+                        নতুন রিভিউ সরাসরি Verified
+                      </label>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          try {
+                            if (!String(newReview.image || '').trim()) {
+                              setMessage('অনুগ্রহ করে ছবির URL দিন বা আপলোড করুন।');
+                              return;
+                            }
+                            const response = await fetch('/api/admin/reviews', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({
+                                ...newReview,
+                                name: newReview.name.trim() || 'ভেরিফায়েড গ্রাহক',
+                                comment: newReview.comment.trim(),
+                              }),
+                            });
+                            const data = await response.json();
+                            if (!response.ok) throw new Error(data.error || 'Create review failed');
+                            setReviews((prev) => [data, ...prev]);
+                            setNewReview({
+                              name: 'ভেরিফায়েড গ্রাহক',
+                              rating: 5,
+                              comment: '',
+                              image: '',
+                              verified: true,
+                            });
+                            setMessage('নতুন রিভিউ যোগ হয়েছে।');
+                          } catch (error) {
+                            setMessage(error.message || 'Create review failed');
+                          }
+                        }}
+                        className="rounded-2xl bg-rose-600 px-5 py-3 text-sm font-black text-white"
+                      >
+                        রিভিউ যোগ করুন
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
               <div className="space-y-4">
                 {reviews.map((review) => (
                   <div key={review._id} className="rounded-[24px] border border-white/10 bg-black/20 p-4">
-                    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                      <div>
-                        <div className="text-lg font-bold text-white">{review.name}</div>
-                        <div className="mt-1 text-sm text-gray-400">Rating: {review.rating}/5</div>
-                        <p className="mt-3 text-sm leading-6 text-gray-300">{review.comment}</p>
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
+                      <div className="relative h-40 w-full max-w-[140px] shrink-0 overflow-hidden rounded-xl border border-white/10 bg-black/40">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={review.image || '/images/user-avatar.jpg'}
+                          alt=""
+                          className="h-full w-full object-cover"
+                        />
                       </div>
-                      <div className="flex gap-3">
-                        <button type="button" onClick={async () => {
-                          await patchItem(`/api/admin/reviews/${review._id}`, { verified: !review.verified }, (data) => {
-                            setReviews((prev) => prev.map((item) => (item._id === review._id ? data : item)));
-                          });
-                        }} className={`rounded-2xl px-4 py-3 text-sm font-black ${review.verified ? 'bg-emerald-600 text-white' : 'bg-amber-500 text-black'}`}>
-                          {review.verified ? 'Approved' : 'Approve'}
-                        </button>
-                        <button type="button" onClick={async () => {
-                          await deleteItem(`/api/admin/reviews/${review._id}`, () => setReviews((prev) => prev.filter((item) => item._id !== review._id)));
-                        }} className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-bold text-white">
-                          Delete
-                        </button>
+                      <div className="min-w-0 flex-1 space-y-3">
+                        <div>
+                          <div className="text-lg font-bold text-white">{review.name}</div>
+                          <div className="mt-1 text-sm text-gray-400">রেটিং: {review.rating}/5</div>
+                          {review.comment ? <p className="mt-2 text-sm leading-6 text-gray-300">{review.comment}</p> : null}
+                        </div>
+                        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+                          <input
+                            className={`${inputClass} min-w-0 flex-1 sm:max-w-xl`}
+                            value={review.image}
+                            onChange={(event) =>
+                              setReviews((prev) =>
+                                prev.map((item) =>
+                                  item._id === review._id ? { ...item, image: event.target.value } : item
+                                )
+                              )
+                            }
+                            placeholder="ইমেজ URL"
+                          />
+                          <label className="shrink-0 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-center text-sm font-bold text-white">
+                            আপলোড
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              disabled={isUploadingImage}
+                              onChange={(event) => {
+                                const file = event.target.files?.[0];
+                                handleLocalImageUpload(file, async (url) => {
+                                  try {
+                                    await patchItem(`/api/admin/reviews/${review._id}`, { image: url }, (data) => {
+                                      setReviews((prev) => prev.map((item) => (item._id === review._id ? data : item)));
+                                    });
+                                    setMessage('রিভিউ ছবি আপডেট হয়েছে।');
+                                  } catch (error) {
+                                    setMessage(error.message || 'Update failed');
+                                  }
+                                });
+                                event.target.value = '';
+                              }}
+                            />
+                          </label>
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              try {
+                                await patchItem(
+                                  `/api/admin/reviews/${review._id}`,
+                                  { image: review.image },
+                                  (data) => {
+                                    setReviews((prev) => prev.map((item) => (item._id === review._id ? data : item)));
+                                  }
+                                );
+                                setMessage('ইমেজ URL সেভ হয়েছে।');
+                              } catch (error) {
+                                setMessage(error.message || 'Save failed');
+                              }
+                            }}
+                            className="shrink-0 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-bold text-white"
+                          >
+                            URL সেভ
+                          </button>
+                        </div>
+                        <div className="flex flex-wrap gap-3 pt-1">
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              await patchItem(`/api/admin/reviews/${review._id}`, { verified: !review.verified }, (data) => {
+                                setReviews((prev) => prev.map((item) => (item._id === review._id ? data : item)));
+                              });
+                            }}
+                            className={`rounded-2xl px-4 py-3 text-sm font-black ${review.verified ? 'bg-emerald-600 text-white' : 'bg-amber-500 text-black'}`}
+                          >
+                            {review.verified ? 'Verified' : 'Approve'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              await deleteItem(`/api/admin/reviews/${review._id}`, () =>
+                                setReviews((prev) => prev.filter((item) => item._id !== review._id))
+                              );
+                            }}
+                            className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-bold text-white"
+                          >
+                            Delete
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -435,7 +956,7 @@ export default function AdminDashboard({ admin }) {
                         <div className="text-sm text-gray-500">{order.city}</div>
                       </div>
                       <div className="space-y-2 text-sm text-gray-300">
-                        <div>Product: {order.productLabel || 'Magic Tissue'}</div>
+                        <div>Product: {order.productLabel || 'EVER GLOW FACE PACK'}</div>
                         <div>Package: {order.packageLabel || '-'}</div>
                         <div>Payment: {order.paymentMethod}</div>
                         <div>Total: {money(order.totalPrice)}</div>
@@ -451,6 +972,28 @@ export default function AdminDashboard({ admin }) {
                           ))}
                         </select>
                         <a href={`tel:${order.phone}`} className="rounded-2xl bg-rose-600 px-4 py-3 text-center text-sm font-black uppercase tracking-[0.15em] text-white">Call Client</a>
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            const confirmed = window.confirm('এই order টি delete করতে চান? এটি UI এবং database দুটো থেকেই delete হবে।');
+
+                            if (!confirmed) {
+                              return;
+                            }
+
+                            try {
+                              await deleteItem(`/api/admin/orders/${order._id}`, () => {
+                                setOrders((prev) => prev.filter((item) => item._id !== order._id));
+                              });
+                              setMessage('Order delete হয়েছে।');
+                            } catch (error) {
+                              setMessage(error.message || 'Order delete failed');
+                            }
+                          }}
+                          className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-bold text-white transition hover:bg-white/[0.08]"
+                        >
+                          Delete Order
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -475,11 +1018,26 @@ export default function AdminDashboard({ admin }) {
                   const data = await response.json();
                   if (!response.ok) throw new Error(data.error || 'Create product failed');
                   setProducts((prev) => [data, ...prev]);
-                  setNewProduct({ name: '', description: 'Magic Tissue', price: 0, discount: 0, image: '' });
-                  setMessage('নতুন product create হয়েছে।');
+                  setNewProduct({ name: '', description: 'EVER GLOW FACE PACK', price: 0, discount: 0, image: '' });
+                  setMessage('নতুন product create হয়েছে।');
                 }} className="rounded-2xl bg-rose-600 px-4 py-3 text-sm font-black text-white">
                   Add Product
                 </button>
+              </div>
+              <div className="mb-6 flex items-center gap-3">
+                <label className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-white">
+                  Upload New Product Image
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(event) => {
+                      const file = event.target.files?.[0];
+                      handleLocalImageUpload(file, (url) => setNewProduct((prev) => ({ ...prev, image: url })));
+                      event.target.value = '';
+                    }}
+                  />
+                </label>
               </div>
               <div className="space-y-4">
                 {products.map((product) => (
@@ -489,7 +1047,22 @@ export default function AdminDashboard({ admin }) {
                     <input className={inputClass} type="number" value={product.discount || 0} onChange={(event) => setProducts((prev) => prev.map((item) => item._id === product._id ? { ...item, discount: Number(event.target.value) } : item))} />
                     <input className={inputClass} value={product.image || ''} onChange={(event) => setProducts((prev) => prev.map((item) => item._id === product._id ? { ...item, image: event.target.value } : item))} />
                     <div className="flex gap-3">
-                      <button type="button" onClick={async () => { await patchItem(`/api/admin/products/${product._id}`, product); setMessage('Product updated হয়েছে।'); }} className="flex-1 rounded-2xl bg-rose-600 px-4 py-3 text-sm font-black text-white">Save</button>
+                      <button type="button" onClick={async () => { await patchItem(`/api/admin/products/${product._id}`, product); setMessage('Product updated হয়েছে।'); }} className="flex-1 rounded-2xl bg-rose-600 px-4 py-3 text-sm font-black text-white">Save</button>
+                      <label className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-bold text-white">
+                        Upload
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(event) => {
+                            const file = event.target.files?.[0];
+                            handleLocalImageUpload(file, (url) =>
+                              setProducts((prev) => prev.map((item) => (item._id === product._id ? { ...item, image: url } : item)))
+                            );
+                            event.target.value = '';
+                          }}
+                        />
+                      </label>
                       <button type="button" onClick={async () => { await deleteItem(`/api/admin/products/${product._id}`, () => setProducts((prev) => prev.filter((item) => item._id !== product._id))); }} className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-bold text-white">Delete</button>
                     </div>
                   </div>
@@ -513,7 +1086,7 @@ export default function AdminDashboard({ admin }) {
                   if (!response.ok) throw new Error(data.error || 'Create FAQ failed');
                   setFaqs((prev) => [...prev, data]);
                   setNewFaq({ question: '', answer: '', order: 0, active: true });
-                  setMessage('নতুন FAQ create হয়েছে।');
+                  setMessage('নতুন FAQ create হয়েছে।');
                 }} className="rounded-2xl bg-rose-600 px-4 py-3 text-sm font-black text-white">
                   Add FAQ
                 </button>
@@ -525,7 +1098,7 @@ export default function AdminDashboard({ admin }) {
                       <input className={inputClass} value={faq.question} onChange={(event) => setFaqs((prev) => prev.map((item) => item._id === faq._id ? { ...item, question: event.target.value } : item))} />
                       <input className={inputClass} value={faq.answer} onChange={(event) => setFaqs((prev) => prev.map((item) => item._id === faq._id ? { ...item, answer: event.target.value } : item))} />
                       <div className="flex gap-3">
-                        <button type="button" onClick={async () => { await patchItem(`/api/admin/faqs/${faq._id}`, faq); setMessage('FAQ updated হয়েছে।'); }} className="flex-1 rounded-2xl bg-rose-600 px-4 py-3 text-sm font-black text-white">Save</button>
+                        <button type="button" onClick={async () => { await patchItem(`/api/admin/faqs/${faq._id}`, faq); setMessage('FAQ updated হয়েছে।'); }} className="flex-1 rounded-2xl bg-rose-600 px-4 py-3 text-sm font-black text-white">Save</button>
                         <button type="button" onClick={async () => { await deleteItem(`/api/admin/faqs/${faq._id}`, () => setFaqs((prev) => prev.filter((item) => item._id !== faq._id))); }} className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-bold text-white">Delete</button>
                       </div>
                     </div>
@@ -551,7 +1124,7 @@ export default function AdminDashboard({ admin }) {
                 </div>
               </Section>
 
-              <Section title="Create New Admin" copy="Master key + username + password দিয়ে নতুন admin তৈরি করুন">
+              <Section title="Create New Admin" copy="Master key + username + password দিয়ে নতুন admin তৈরি করুন">
                 <form
                   onSubmit={async (event) => {
                     event.preventDefault();
@@ -570,7 +1143,7 @@ export default function AdminDashboard({ admin }) {
                       const data = await response.json();
                       if (!response.ok) throw new Error(data.error || 'Create admin failed');
                       event.currentTarget.reset();
-                      setMessage('নতুন admin create হয়েছে।');
+                      setMessage('নতুন admin create হয়েছে।');
                       const refreshed = await fetch('/api/admin/admins', { cache: 'no-store' }).then((value) => value.json());
                       setAdmins(refreshed);
                     } catch (error) {

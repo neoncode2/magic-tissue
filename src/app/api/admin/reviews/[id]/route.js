@@ -2,6 +2,32 @@ import dbConnect from '@/lib/mongodb';
 import Review from '@/models/Review';
 import { requireAdminApi, unauthorizedResponse } from '@/lib/admin-auth';
 
+function normalizeReviewUpdates(input = {}) {
+  const updates = {};
+
+  if (Object.prototype.hasOwnProperty.call(input, 'name')) {
+    updates.name = String(input.name || '').trim() || 'Verified Customer';
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, 'rating')) {
+    updates.rating = Math.min(5, Math.max(1, Number(input.rating || 5)));
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, 'comment')) {
+    updates.comment = String(input.comment || '').trim();
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, 'image')) {
+    updates.image = String(input.image || '').trim();
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, 'verified')) {
+    updates.verified = Boolean(input.verified);
+  }
+
+  return updates;
+}
+
 export async function PATCH(request, context) {
   const admin = await requireAdminApi(request);
 
@@ -13,8 +39,12 @@ export async function PATCH(request, context) {
 
   try {
     const { id } = await context.params;
-    const updates = await request.json();
-    const review = await Review.findByIdAndUpdate(id, updates, { new: true, runValidators: true });
+    const payload = await request.json();
+    const updates = normalizeReviewUpdates(payload);
+    const review = await Review.findByIdAndUpdate(id, updates, {
+      new: true,
+      runValidators: true,
+    });
 
     if (!review) {
       return Response.json({ error: 'Review not found' }, { status: 404 });
