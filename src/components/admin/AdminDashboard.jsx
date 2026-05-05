@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { mergeSiteConfig, siteDefaults } from '@/lib/siteDefaults';
+import SpinAdminPanel from '@/components/admin/SpinAdminPanel';
 
 const navItems = [
   ['overview', 'Overview'],
@@ -14,6 +15,7 @@ const navItems = [
   ['reviews', 'Reviews'],
   ['products', 'Products'],
   ['faqs', 'FAQ'],
+  ['spin', 'Spin Wheel'],
   ['admins', 'Admins'],
 ];
 
@@ -138,6 +140,27 @@ export default function AdminDashboard({ admin }) {
   const [reviews, setReviews] = useState([]);
   const [products, setProducts] = useState([]);
   const [faqs, setFaqs] = useState([]);
+  const [spinOptions, setSpinOptions] = useState([]);
+  const [spinConfig, setSpinConfig] = useState({
+    popupEnabled: true,
+    minDelaySeconds: 5,
+    maxDelaySeconds: 20,
+    showProbability: 0.5,
+    exitIntentEnabled: true,
+    sideImageUrl: '',
+    popupTitle: 'Spin the wheel for a surprise discount',
+    popupSubtitle: 'Try your luck once and unlock a verified reward for checkout.',
+    popupButtonText: 'Spin Now',
+    forceResultOptionId: null,
+  });
+  const [spinAnalytics, setSpinAnalytics] = useState({
+    totalSpins: 0,
+    consumedSpins: 0,
+    availableSpins: 0,
+    rewardedOrders: 0,
+    rewardBreakdown: [],
+    recentSpins: [],
+  });
   const [admins, setAdmins] = useState([]);
   const [masterKey, setMasterKey] = useState('');
   const [message, setMessage] = useState('');
@@ -153,6 +176,14 @@ export default function AdminDashboard({ admin }) {
     verified: true,
   });
 
+  const [newSpinOption, setNewSpinOption] = useState({
+    label: '10% OFF',
+    type: 'percentage',
+    value: 10,
+    probability: 30,
+    color: '#e11d48',
+  });
+
   async function loadAll() {
     setLoading(true);
     try {
@@ -163,6 +194,9 @@ export default function AdminDashboard({ admin }) {
         fetch('/api/admin/reviews', { cache: 'no-store' }),
         fetch('/api/admin/products', { cache: 'no-store' }),
         fetch('/api/admin/faqs', { cache: 'no-store' }),
+        fetch('/api/admin/spin-options', { cache: 'no-store' }),
+        fetch('/api/admin/spin-config', { cache: 'no-store' }),
+        fetch('/api/admin/spin-analytics', { cache: 'no-store' }),
         fetch('/api/admin/admins', { cache: 'no-store' }),
       ]);
 
@@ -173,7 +207,10 @@ export default function AdminDashboard({ admin }) {
       setReviews(data[3]);
       setProducts(data[4]);
       setFaqs(data[5]);
-      setAdmins(data[6]);
+      setSpinOptions(data[6]);
+      setSpinConfig(data[7]);
+      setSpinAnalytics(data[8]);
+      setAdmins(data[9]);
     } catch {
       setMessage('Dashboard load করা যায়নি।');
     } finally {
@@ -224,6 +261,60 @@ export default function AdminDashboard({ admin }) {
     if (!response.ok) throw new Error(data.error || 'Config save failed');
     setSiteConfig(mergeSiteConfig(data.config));
     setMessage('Site content updated হয়েছে।');
+  }
+
+  async function saveSpinConfig() {
+    const response = await fetch('/api/admin/spin-config', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(spinConfig),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Spin config save failed');
+    setSpinConfig(data);
+    setMessage('Spin settings updated.');
+  }
+
+  async function createSpinOption() {
+    const response = await fetch('/api/admin/spin-options', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newSpinOption),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Create spin option failed');
+    setSpinOptions((prev) => [...prev, data]);
+    setNewSpinOption({
+      label: '10% OFF',
+      type: 'percentage',
+      value: 10,
+      probability: 30,
+      color: '#e11d48',
+    });
+    setMessage('New spin reward created.');
+  }
+
+  async function patchSpinOption(option) {
+    const response = await fetch(`/api/admin/spin-options/${option._id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(option),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Update spin option failed');
+    setSpinOptions((prev) => prev.map((item) => (item._id === option._id ? data : item)));
+    setMessage('Spin reward updated.');
+  }
+
+  async function deleteSpinOption(id) {
+    const response = await fetch(`/api/admin/spin-options/${id}`, { method: 'DELETE' });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Delete spin option failed');
+    setSpinOptions((prev) => prev.filter((item) => item._id !== id));
+    if (spinConfig.forceResultOptionId === id) {
+      setSpinConfig((prev) => ({ ...prev, forceResultOptionId: null }));
+    }
+    setMessage('Spin reward deleted.');
   }
 
   async function uploadImageToImgbb(file) {
@@ -1106,6 +1197,48 @@ export default function AdminDashboard({ admin }) {
                 ))}
               </div>
             </Section>
+          ) : null}
+
+          {active === 'spin' ? (
+            <SpinAdminPanel
+              inputClass={inputClass}
+              spinOptions={spinOptions}
+              setSpinOptions={setSpinOptions}
+              spinConfig={spinConfig}
+              setSpinConfig={setSpinConfig}
+              spinAnalytics={spinAnalytics}
+              newSpinOption={newSpinOption}
+              setNewSpinOption={setNewSpinOption}
+              onUploadImage={handleLocalImageUpload}
+              saveSpinConfig={async () => {
+                try {
+                  await saveSpinConfig();
+                } catch (error) {
+                  setMessage(error.message || 'Spin config save failed');
+                }
+              }}
+              createSpinOption={async () => {
+                try {
+                  await createSpinOption();
+                } catch (error) {
+                  setMessage(error.message || 'Create spin option failed');
+                }
+              }}
+              patchSpinOption={async (option) => {
+                try {
+                  await patchSpinOption(option);
+                } catch (error) {
+                  setMessage(error.message || 'Update spin option failed');
+                }
+              }}
+              deleteSpinOption={async (id) => {
+                try {
+                  await deleteSpinOption(id);
+                } catch (error) {
+                  setMessage(error.message || 'Delete spin option failed');
+                }
+              }}
+            />
           ) : null}
 
           {active === 'admins' ? (

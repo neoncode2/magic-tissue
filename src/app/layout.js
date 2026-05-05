@@ -1,5 +1,6 @@
 import { Inter, Poppins, Hind_Siliguri } from 'next/font/google';
 import './globals.css';
+import AppProviders from '@/components/providers/AppProviders';
 
 const inter = Inter({ variable: '--font-inter', subsets: ['latin'] });
 const poppins = Poppins({ variable: '--font-poppins', subsets: ['latin'], weight: ['400', '600', '700', '800'] });
@@ -14,7 +15,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="bn" className={`${inter.variable} ${poppins.variable} ${hindSiliguri.variable} scroll-smooth`}>
       <body className="bg-[#080808] text-white antialiased overflow-x-hidden font-hind">
-        {children}
+        <AppProviders>{children}</AppProviders>
       </body>
     </html>
   );

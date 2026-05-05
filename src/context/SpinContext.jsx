@@ -1,0 +1,103 @@
+'use client';
+
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { getSpinConfig, getSpinStatus } from '@/lib/spin-api';
+import { useAuth } from '@/context/AuthContext';
+
+const SpinContext = createContext(null);
+
+export function SpinProvider({ children }) {
+  const { token, loading: authLoading, isFirebaseReady } = useAuth();
+  const [config, setConfig] = useState(null);
+  const [status, setStatus] = useState({
+    hasSpun: false,
+    used: false,
+    reward: null,
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      try {
+        const spinConfig = await getSpinConfig();
+        if (!cancelled) {
+          setConfig(spinConfig);
+        }
+      } catch {
+        if (!cancelled) {
+          setConfig(null);
+        }
+      }
+    }
+
+    load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadStatus() {
+      if (authLoading) {
+        return;
+      }
+
+      if (!token || !isFirebaseReady) {
+        if (!cancelled) {
+          setLoading(false);
+        }
+        return;
+      }
+
+      try {
+        const nextStatus = await getSpinStatus(token);
+
+        if (!cancelled) {
+          setStatus(nextStatus);
+        }
+      } catch {
+        if (!cancelled) {
+          setStatus({
+            hasSpun: false,
+            used: false,
+            reward: null,
+          });
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadStatus();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authLoading, isFirebaseReady, token]);
+
+  const value = useMemo(() => ({
+    config,
+    status,
+    loading,
+    setStatus,
+  }), [config, loading, status]);
+
+  return <SpinContext.Provider value={value}>{children}</SpinContext.Provider>;
+}
+
+export function useSpin() {
+  const context = useContext(SpinContext);
+
+  if (!context) {
+    throw new Error('useSpin must be used within SpinProvider');
+  }
+
+  return context;
+}

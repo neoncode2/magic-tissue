@@ -11,6 +11,7 @@ import Footer from '@/components/Footer';
 import DiscreteShipping from '@/components/DiscreteShipping';
 import ProductMarquee from '@/components/ProductMarquee';
 import FloatingWhatsApp from '@/components/FloatingWhatsApp';
+import SpinWheelMount from '@/components/spin/SpinWheelMount';
 
 export default function Home() {
   return (
@@ -38,6 +39,7 @@ export default function Home() {
       <ProductMarquee />
       <Footer />
       <FloatingWhatsApp />
+      <SpinWheelMount />
     </main>
   );
 }

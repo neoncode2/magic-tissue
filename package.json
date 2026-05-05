@@ -4,21 +4,28 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:backend": "node server/index.mjs",
     "build": "next build",
     "start": "next start",
+    "start:backend": "node server/index.mjs",
     "lint": "eslint"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.58.0",
+    "axios": "^1.7.2",
+    "cors": "^2.8.6",
+    "daisyui": "^4.11.0",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "firebase": "^12.12.1",
+    "firebase-admin": "^13.8.0",
+    "framer-motion": "^11.0.3",
+    "mongodb": "^6.5.0",
+    "mongoose": "^8.2.0",
     "next": "16.2.2",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "daisyui": "^4.11.0",
-    "framer-motion": "^11.0.3",
-    "swiper": "^11.1.14",
-    "@tanstack/react-query": "^5.58.0",
-    "axios": "^1.7.2",
-    "mongodb": "^6.5.0",
-    "mongoose": "^8.2.0"
+    "swiper": "^11.1.14"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
