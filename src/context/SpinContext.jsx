@@ -3,12 +3,20 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { getSpinConfig, getSpinStatus } from '@/lib/spin-api';
 import { useAuth } from '@/context/AuthContext';
+import { defaultSpinConfig, defaultSpinOptions } from '@/lib/spin-defaults';
 
 const SpinContext = createContext(null);
+const fallbackConfig = {
+  ...defaultSpinConfig,
+  options: defaultSpinOptions.map((option, index) => ({
+    id: `fallback-${index}`,
+    ...option,
+  })),
+};
 
 export function SpinProvider({ children }) {
   const { token, loading: authLoading, isAuthReady } = useAuth();
-  const [config, setConfig] = useState(null);
+  const [config, setConfig] = useState(fallbackConfig);
   const [status, setStatus] = useState({
     hasSpun: false,
     used: false,
@@ -27,7 +35,7 @@ export function SpinProvider({ children }) {
         }
       } catch {
         if (!cancelled) {
-          setConfig(null);
+          setConfig(fallbackConfig);
         }
       }
     }
