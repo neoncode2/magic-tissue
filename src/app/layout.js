@@ -9,6 +9,11 @@ const hindSiliguri = Hind_Siliguri({ variable: '--font-hind', subsets: ['bengali
 export const metadata = {
   title: 'Magic Tissue - Premium Confidence',
   description: 'High conversion landing page for Magic Tissue',
+  icons: {
+    icon: '/magic tissue.svg', 
+    shortcut: '/magic tissue.svg', 
+    apple: '/magic tissue.svg', 
+  },
 };
 
 export default function RootLayout({ children }) {

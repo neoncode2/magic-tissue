@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 
 const links = [
   { href: '#product', label: 'উপকারিতা' },
@@ -17,9 +18,7 @@ export default function Navbar() {
     <header className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-[#090909]/88 backdrop-blur-xl">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
         <a href="#hero" className="flex items-center gap-3">
-          <div className="red-glow flex h-12 w-12 items-center justify-center rounded-2xl bg-[#E50914]">
-            <span className="font-serif text-lg font-extrabold text-white">MT</span>
-          </div>
+          <Image src="/magic tissue.jpg" alt="Magic Tissue logo" width={48} height={48} />
           <div>
             <div className="font-serif text-lg font-bold text-white">Magic Tissue</div>
             <div className="text-xs uppercase tracking-[0.28em] text-[#ff8d95]">Instant Confidence</div>
