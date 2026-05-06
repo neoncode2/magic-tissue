@@ -2,19 +2,53 @@
 
 import { motion } from 'framer-motion';
 import Image from 'next/image';
+import { useEffect, useMemo, useState } from 'react';
 
-const productImages = [
+const fallbackProductImages = [
   '/tissue.png', 
   '/Tissue-Magic-2.jpg',
   '/tissue-1.jfif',
   '/magic-tissue 3.png',
-   '/tissue.png', 
-  '/Tissue-Magic-2.jpg',
-  '/tissue-1.jfif',
-  
 ];
 
 export default function ProductMarquee() {
+  const [productImages, setProductImages] = useState(fallbackProductImages);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchProductImages = async () => {
+      try {
+        const response = await fetch('/api/products', { cache: 'no-store' });
+
+        if (!response.ok) {
+          return;
+        }
+
+        const products = await response.json();
+        const images = Array.isArray(products)
+          ? products
+              .map((product) => product?.image)
+              .filter((image) => typeof image === 'string' && image.trim().length > 0)
+          : [];
+
+        if (isMounted && images.length > 0) {
+          setProductImages(images);
+        }
+      } catch {
+        // Keep fallback images if API fails.
+      }
+    };
+
+    fetchProductImages();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const marqueeImages = useMemo(() => [...productImages, ...productImages], [productImages]);
+
   return (
     <section className="bg-[#080808] py-4  overflow-hidden border-t border-white/5">
       <div className="container mx-auto px-4 mb-5 md:mb-6 text-center">
@@ -39,7 +73,7 @@ export default function ProductMarquee() {
           }}
         >
           {/* আমরা ডাবল লিস্ট ব্যবহার করছি যাতে লুপটি একদম স্মুথ হয় */}
-          {[...productImages, ...productImages].map((img, index) => (
+          {marqueeImages.map((img, index) => (
             <div 
               key={index} 
               className="relative group w-[250px] md:w-[350px] aspect-square rounded-[32px] overflow-hidden border border-white/10 bg-white/5 backdrop-blur-sm"

@@ -6,9 +6,6 @@ import { spinOnce } from '@/lib/spin-api';
 import { useAuth } from '@/context/AuthContext';
 import { useSpin } from '@/context/SpinContext';
 
-const STORAGE_KEY = process.env.NEXT_PUBLIC_SPIN_WHEEL_STORAGE_KEY || 'magic-tissue-spin-popup-v1';
-const REAPPEAR_INTERVAL_MS = 30_000;
-
 function randomBetween(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
@@ -53,10 +50,12 @@ export default function SpinWheelPopup() {
   const [error, setError] = useState('');
   const timeoutRef = useRef(null);
   const intervalRef = useRef(null);
+  const nextAllowedAtRef = useRef(0);
   const confetti = useMemo(() => createConfetti(), []);
 
   const options = useMemo(() => config?.options || [], [config?.options]);
   const segmentSize = options.length > 0 ? 360 / options.length : 360;
+  const reappearDelayMs = Math.max(5000, Number(config?.reappearDelaySeconds || 30) * 1000);
 
   const wheelBackground = useMemo(() => {
     if (options.length === 0) {
@@ -72,6 +71,14 @@ export default function SpinWheelPopup() {
       .join(', ')})`;
   }, [options, segmentSize]);
 
+  function getNextAllowedAt() {
+    return nextAllowedAtRef.current || 0;
+  }
+
+  function setCooldown() {
+    nextAllowedAtRef.current = Date.now() + reappearDelayMs;
+  }
+
   useEffect(() => {
     if (!config?.popupEnabled || status.hasSpun || !isAuthReady) {
       return undefined;
@@ -82,6 +89,9 @@ export default function SpinWheelPopup() {
     }
 
     const showPopup = () => {
+      if (Date.now() < getNextAllowedAt()) {
+        return;
+      }
       if (Math.random() > Number(config.showProbability ?? 0.5)) {
         return;
       }
@@ -95,10 +105,13 @@ export default function SpinWheelPopup() {
       if (!isOpen && !isSpinning && !result) {
         showPopup();
       }
-    }, REAPPEAR_INTERVAL_MS);
+    }, reappearDelayMs);
 
     function onExitIntent(event) {
       if (event.clientY > 24 || !config.exitIntentEnabled) {
+        return;
+      }
+      if (Date.now() < getNextAllowedAt()) {
         return;
       }
 
@@ -118,7 +131,7 @@ export default function SpinWheelPopup() {
       }
       window.removeEventListener('mouseout', onExitIntent);
     };
-  }, [config, isAuthReady, isOpen, isSpinning, result, status.hasSpun]);
+  }, [config, isAuthReady, isOpen, isSpinning, reappearDelayMs, result, status.hasSpun]);
 
   async function handleSpin() {
     if (!token || isSpinning || options.length === 0) {
@@ -150,6 +163,7 @@ export default function SpinWheelPopup() {
           },
         });
         setIsOpen(false);
+        setCooldown();
         const orderSection = document.getElementById('order-form');
         if (orderSection) {
           orderSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -184,7 +198,10 @@ export default function SpinWheelPopup() {
           >
             <button
               type="button"
-              onClick={() => setIsOpen(false)}
+              onClick={() => {
+                setIsOpen(false);
+                setCooldown();
+              }}
               className="absolute right-4 top-4 z-20 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-white/70"
             >
               Close
@@ -207,7 +224,7 @@ export default function SpinWheelPopup() {
                   {config?.popupSubtitle || 'Try your luck once and unlock a verified reward for checkout.'}
                 </p>
                 <div className="mt-4 inline-flex rounded-full border border-amber-300/30 bg-amber-300/10 px-4 py-1 text-xs font-black uppercase tracking-[0.2em] text-amber-200">
-                  Every 30s a new chance appears
+                  Every {Math.max(5, Number(config?.reappearDelaySeconds || 30))}s a new chance appears
                 </div>
 
                 <div className="mt-8 grid gap-3 sm:grid-cols-2">

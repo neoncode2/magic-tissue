@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import useSiteConfig from '@/hooks/useSiteConfig';
 
 const trustItems = [
   'Cash on Delivery সারা বাংলাদেশে',
@@ -10,6 +11,9 @@ const trustItems = [
 ];
 
 export default function Footer() {
+  const { config } = useSiteConfig();
+  const callNumber = config?.contact?.callNumber || '+601164444944';
+
   return (
     <footer className="section-shell relative overflow-hidden border-t border-white/5 bg-[#080808] py-20">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(225,29,72,0.15),transparent_40%)]" />
@@ -66,9 +70,10 @@ export default function Footer() {
 
             <div className="mt-10 flex items-center justify-center">
               <motion.a
-                whileHover={{ backgroundColor: 'rgba(255, 255, 255, 0.1)' }}
-                href="tel:+601164444944"
-                className="w-full rounded-2xl border border-white/10 bg-white/5 px-10 py-5 text-center text-lg font-bold text-white transition-all sm:w-auto"
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.98 }}
+                href={`tel:${callNumber}`}
+                className="w-full rounded-2xl border border-rose-300/30 bg-gradient-to-r from-rose-600 via-red-500 to-orange-500 px-10 py-5 text-center text-lg font-bold text-white shadow-[0_14px_35px_rgba(225,29,72,0.4)] transition-all sm:w-auto"
               >
                 কল করুন
               </motion.a>

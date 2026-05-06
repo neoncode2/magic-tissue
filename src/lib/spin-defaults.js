@@ -29,6 +29,7 @@ export const defaultSpinConfig = {
   popupEnabled: true,
   minDelaySeconds: 5,
   maxDelaySeconds: 20,
+  reappearDelaySeconds: 30,
   showProbability: 0.5,
   exitIntentEnabled: true,
   sideImageUrl: '',

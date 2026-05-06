@@ -55,6 +55,10 @@ export const siteDefaults = {
       url: process.env.NEXT_PUBLIC_HERO_VIDEO_EMBED_URL || '',
     },
   ],
+  contact: {
+    callNumber: '+601164444944',
+    whatsappNumber: '601164444944',
+  },
 };
 
 export function mergeSiteConfig(input = {}) {
@@ -89,5 +93,9 @@ export function mergeSiteConfig(input = {}) {
       Array.isArray(input.mediaPosts) && input.mediaPosts.length > 0
         ? input.mediaPosts
         : siteDefaults.mediaPosts,
+    contact: {
+      ...siteDefaults.contact,
+      ...(input.contact || {}),
+    },
   };
 }

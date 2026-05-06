@@ -55,6 +55,10 @@ const SiteConfigSchema = new mongoose.Schema(
     },
     packages: [PackageSchema],
     mediaPosts: [MediaPostSchema],
+    contact: {
+      callNumber: String,
+      whatsappNumber: String,
+    },
   },
   { timestamps: true }
 );

@@ -1,13 +1,17 @@
 'use client';
 
-function getWhatsAppLink() {
-  const rawNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '601164444944';
+import useSiteConfig from '@/hooks/useSiteConfig';
+
+function getWhatsAppLink(rawNumber) {
   const digits = rawNumber.replace(/\D/g, '');
   return `https://wa.me/${digits}`;
 }
 
 export default function FloatingWhatsApp() {
-  const whatsappLink = getWhatsAppLink();
+  const { config } = useSiteConfig();
+  const rawNumber =
+    config?.contact?.whatsappNumber || process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '601164444944';
+  const whatsappLink = getWhatsAppLink(rawNumber);
 
   return (
     <a

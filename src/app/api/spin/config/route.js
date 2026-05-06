@@ -32,6 +32,7 @@ export async function GET() {
       popupEnabled: config.popupEnabled,
       minDelaySeconds: config.minDelaySeconds,
       maxDelaySeconds: config.maxDelaySeconds,
+      reappearDelaySeconds: config.reappearDelaySeconds,
       showProbability: config.showProbability,
       exitIntentEnabled: config.exitIntentEnabled,
       sideImageUrl: config.sideImageUrl,

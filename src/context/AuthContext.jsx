@@ -1,9 +1,8 @@
 'use client';
 
-import { createContext, useContext, useMemo, useSyncExternalStore } from 'react';
+import { createContext, useContext, useMemo, useState } from 'react';
 
 const AuthContext = createContext(null);
-const STORAGE_KEY = process.env.NEXT_PUBLIC_SPIN_USER_STORAGE_KEY || 'magic-tissue-spin-user-id';
 
 function createSpinUserId() {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
@@ -13,27 +12,9 @@ function createSpinUserId() {
   return `spin-user-${Date.now()}-${Math.random().toString(36).slice(2, 12)}`;
 }
 
-function getServerSessionSnapshot() {
-  return '';
-}
-
-function getClientSessionSnapshot() {
-  let spinUserId = localStorage.getItem(STORAGE_KEY);
-
-  if (!spinUserId) {
-    spinUserId = createSpinUserId();
-    localStorage.setItem(STORAGE_KEY, spinUserId);
-  }
-
-  return spinUserId;
-}
-
-function subscribeToSessionChanges() {
-  return () => {};
-}
-
 export function AuthProvider({ children }) {
-  const token = useSyncExternalStore(subscribeToSessionChanges, getClientSessionSnapshot, getServerSessionSnapshot);
+  // Keep spin identity only in-memory for this page load.
+  const [token] = useState(() => createSpinUserId());
   const loading = token.length === 0;
 
   const value = useMemo(() => ({

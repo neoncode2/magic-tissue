@@ -79,6 +79,14 @@ export default function SpinAdminPanel({
           <input
             className={inputClass}
             type="number"
+            min="5"
+            value={spinConfig.reappearDelaySeconds ?? 30}
+            onChange={(event) => setSpinConfig((prev) => ({ ...prev, reappearDelaySeconds: Number(event.target.value) }))}
+            placeholder="Reappear delay after close/spin (seconds)"
+          />
+          <input
+            className={inputClass}
+            type="number"
             min="0"
             max="1"
             step="0.05"

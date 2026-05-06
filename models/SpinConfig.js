@@ -22,6 +22,11 @@ const SpinConfigSchema = new mongoose.Schema(
       default: 20,
       min: 0,
     },
+    reappearDelaySeconds: {
+      type: Number,
+      default: 30,
+      min: 5,
+    },
     showProbability: {
       type: Number,
       default: 0.5,

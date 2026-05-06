@@ -24,6 +24,7 @@ export function normalizeSpinConfigPayload(input = {}) {
     popupEnabled: input.popupEnabled !== false,
     minDelaySeconds,
     maxDelaySeconds,
+    reappearDelaySeconds: clampSpinValue(Number(input.reappearDelaySeconds ?? 30), 5, 600),
     showProbability: clampSpinValue(Number(input.showProbability ?? 0.5), 0, 1),
     exitIntentEnabled: input.exitIntentEnabled !== false,
     sideImageUrl: String(input.sideImageUrl || '').trim(),

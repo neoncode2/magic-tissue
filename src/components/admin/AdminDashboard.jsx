@@ -145,6 +145,7 @@ export default function AdminDashboard({ admin }) {
     popupEnabled: true,
     minDelaySeconds: 5,
     maxDelaySeconds: 20,
+    reappearDelaySeconds: 30,
     showProbability: 0.5,
     exitIntentEnabled: true,
     sideImageUrl: '',
@@ -601,6 +602,30 @@ export default function AdminDashboard({ admin }) {
 
                 <textarea className={`${inputClass} mt-4 min-h-28`} value={siteConfig.hero.subtitle} onChange={(event) => setSiteConfig((prev) => ({ ...prev, hero: { ...prev.hero, subtitle: event.target.value } }))} placeholder="Subtitle" />
                 <textarea className={`${inputClass} mt-4 min-h-24`} value={siteConfig.hero.warningText} onChange={(event) => setSiteConfig((prev) => ({ ...prev, hero: { ...prev.hero, warningText: event.target.value } }))} placeholder="Warning text" />
+                <div className="mt-4 grid gap-4 md:grid-cols-2">
+                  <input
+                    className={inputClass}
+                    value={siteConfig.contact?.callNumber || ''}
+                    onChange={(event) =>
+                      setSiteConfig((prev) => ({
+                        ...prev,
+                        contact: { ...(prev.contact || {}), callNumber: event.target.value },
+                      }))
+                    }
+                    placeholder="Call number (ex: +601164444944)"
+                  />
+                  <input
+                    className={inputClass}
+                    value={siteConfig.contact?.whatsappNumber || ''}
+                    onChange={(event) =>
+                      setSiteConfig((prev) => ({
+                        ...prev,
+                        contact: { ...(prev.contact || {}), whatsappNumber: event.target.value },
+                      }))
+                    }
+                    placeholder="WhatsApp number (digits only preferred)"
+                  />
+                </div>
               </Section>
 
               <Section title="Media Posts" copy="YouTube বা অন্য platform এর media links">

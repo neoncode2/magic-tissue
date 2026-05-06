@@ -5,7 +5,7 @@ export async function GET(request) {
   await dbConnect();
 
   try {
-    const reviews = await Review.find({ verified: true }).sort({ createdAt: -1 });
+    const reviews = await Review.find({}).sort({ createdAt: -1 });
     return new Response(JSON.stringify(reviews), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
