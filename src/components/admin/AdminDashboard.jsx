@@ -6,6 +6,7 @@ import SpinAdminPanel from '@/components/admin/SpinAdminPanel';
 
 const navItems = [
   ['overview', 'Overview'],
+  ['stock', 'Stock Management'],
   ['content', 'Hero & Media'],
   ['orders', 'Orders'],
   ['benefits', 'Benefits'],
@@ -167,7 +168,7 @@ export default function AdminDashboard({ admin }) {
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
-  const [newProduct, setNewProduct] = useState({ name: '', description: 'EVER GLOW FACE PACK', price: 0, discount: 0, image: '' });
+  const [newProduct, setNewProduct] = useState({ name: '', description: 'EVER GLOW FACE PACK', price: 0, discount: 0, image: '', stockQuantity: 0 });
   const [newFaq, setNewFaq] = useState({ question: '', answer: '', order: 0, active: true });
   const [newReview, setNewReview] = useState({
     name: 'ভেরিফায়েড গ্রাহক',
@@ -232,6 +233,13 @@ export default function AdminDashboard({ admin }) {
       ['Customers', overview.activeCustomers],
     ];
   }, [overview]);
+
+  const stockSummary = useMemo(() => {
+    const totalStock = products.reduce((sum, item) => sum + Math.max(0, Number(item.stockQuantity || 0)), 0);
+    const lowStockCount = products.filter((item) => Number(item.stockQuantity || 0) > 0 && Number(item.stockQuantity || 0) <= 5).length;
+    const outOfStockCount = products.filter((item) => Number(item.stockQuantity || 0) <= 0).length;
+    return { totalStock, lowStockCount, outOfStockCount };
+  }, [products]);
 
   async function patchItem(url, payload, handler) {
     const response = await fetch(url, {
@@ -362,6 +370,21 @@ export default function AdminDashboard({ admin }) {
     window.location.href = '/admin/login';
   }
 
+  async function saveProductStock(product) {
+    try {
+      const payload = {
+        ...product,
+        stockQuantity: Math.max(0, Number(product.stockQuantity || 0)),
+      };
+      await patchItem(`/api/admin/products/${product._id}`, payload, (updated) => {
+        setProducts((prev) => prev.map((item) => (item._id === product._id ? updated : item)));
+      });
+      setMessage(`${product.name} stock update হয়েছে।`);
+    } catch (error) {
+      setMessage(error.message || 'Stock update failed');
+    }
+  }
+
   if (loading) {
     return <div className="flex min-h-screen items-center justify-center bg-[#070707] text-rose-400">Loading...</div>;
   }
@@ -454,6 +477,54 @@ export default function AdminDashboard({ admin }) {
                         <div className="mt-1 text-sm text-gray-400">{order.phone}</div>
                       </div>
                       <div className="mt-3 text-sm text-gray-400 md:mt-0">{money(order.totalPrice)}</div>
+                    </div>
+                  ))}
+                </div>
+              </Section>
+            </div>
+          ) : null}
+
+          {active === 'stock' ? (
+            <div className="space-y-6">
+              <Section title="Stock Snapshot" copy="Manual stock update করুন। Order confirmed হলে quantity auto কমে যাবে।">
+                <div className="grid gap-4 md:grid-cols-3">
+                  <StatCard label="Total Units In Stock" value={stockSummary.totalStock} />
+                  <StatCard label="Low Stock Products (<=5)" value={stockSummary.lowStockCount} />
+                  <StatCard label="Out of Stock Products" value={stockSummary.outOfStockCount} />
+                </div>
+              </Section>
+
+              <Section title="Stock Management" copy="প্রতিটি product এর available quantity edit করে Save দিন।">
+                <div className="space-y-4">
+                  {products.map((product) => (
+                    <div key={product._id} className="grid gap-4 rounded-[24px] border border-white/10 bg-black/20 p-4 md:grid-cols-[1.3fr_180px_160px] md:items-end">
+                      <div>
+                        <div className="text-base font-bold text-white">{product.name}</div>
+                        <div className="mt-1 text-xs uppercase tracking-[0.16em] text-gray-500">
+                          Status: {Number(product.stockQuantity || 0) > 0 ? 'In stock' : 'Out of stock'}
+                        </div>
+                      </div>
+                      <input
+                        className={inputClass}
+                        type="number"
+                        min="0"
+                        value={product.stockQuantity ?? 0}
+                        onChange={(event) =>
+                          setProducts((prev) =>
+                            prev.map((item) =>
+                              item._id === product._id ? { ...item, stockQuantity: Math.max(0, Number(event.target.value || 0)) } : item
+                            )
+                          )
+                        }
+                        placeholder="Stock qty"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => saveProductStock(product)}
+                        className="rounded-2xl bg-rose-600 px-4 py-3 text-sm font-black text-white"
+                      >
+                        Save Stock
+                      </button>
                     </div>
                   ))}
                 </div>
@@ -1079,9 +1150,17 @@ export default function AdminDashboard({ admin }) {
                       </div>
                       <div className="flex flex-col gap-3">
                         <select value={order.status} onChange={async (event) => {
-                          await patchItem(`/api/admin/orders/${order._id}`, { status: event.target.value }, (data) => {
-                            setOrders((prev) => prev.map((item) => (item._id === order._id ? data : item)));
-                          });
+                          try {
+                            const nextStatus = event.target.value;
+                            await patchItem(`/api/admin/orders/${order._id}`, { status: nextStatus }, (data) => {
+                              setOrders((prev) => prev.map((item) => (item._id === order._id ? data : item)));
+                            });
+                            if (nextStatus === 'delivered' && order.status !== 'delivered') {
+                              setMessage('Order delivered হওয়ায় stock থেকে quantity কমে গেছে।');
+                            }
+                          } catch (error) {
+                            setMessage(error.message || 'Order status update failed');
+                          }
                         }} className={inputClass}>
                           {['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'].map((status) => (
                             <option key={status} value={status}>{status}</option>
@@ -1120,21 +1199,22 @@ export default function AdminDashboard({ admin }) {
 
           {active === 'products' ? (
             <Section title="Products" copy="Backend product data edit এবং delete করুন">
-              <div className="mb-6 grid gap-4 rounded-[24px] border border-dashed border-white/10 bg-black/20 p-4 md:grid-cols-5">
+              <div className="mb-6 grid gap-4 rounded-[24px] border border-dashed border-white/10 bg-black/20 p-4 md:grid-cols-6">
                 <input className={inputClass} value={newProduct.name} onChange={(event) => setNewProduct((prev) => ({ ...prev, name: event.target.value }))} placeholder="New product name" />
                 <input className={inputClass} type="number" value={newProduct.price} onChange={(event) => setNewProduct((prev) => ({ ...prev, price: Number(event.target.value) }))} placeholder="Price" />
                 <input className={inputClass} type="number" value={newProduct.discount} onChange={(event) => setNewProduct((prev) => ({ ...prev, discount: Number(event.target.value) }))} placeholder="Discount" />
+                <input className={inputClass} type="number" min="0" value={newProduct.stockQuantity} onChange={(event) => setNewProduct((prev) => ({ ...prev, stockQuantity: Math.max(0, Number(event.target.value || 0)) }))} placeholder="Stock qty" />
                 <input className={inputClass} value={newProduct.image} onChange={(event) => setNewProduct((prev) => ({ ...prev, image: event.target.value }))} placeholder="Image path" />
                 <button type="button" onClick={async () => {
                   const response = await fetch('/api/admin/products', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ ...newProduct, features: [], inStock: true }),
+                    body: JSON.stringify({ ...newProduct, features: [], inStock: Number(newProduct.stockQuantity || 0) > 0 }),
                   });
                   const data = await response.json();
                   if (!response.ok) throw new Error(data.error || 'Create product failed');
                   setProducts((prev) => [data, ...prev]);
-                  setNewProduct({ name: '', description: 'EVER GLOW FACE PACK', price: 0, discount: 0, image: '' });
+                  setNewProduct({ name: '', description: 'EVER GLOW FACE PACK', price: 0, discount: 0, image: '', stockQuantity: 0 });
                   setMessage('নতুন product create হয়েছে।');
                 }} className="rounded-2xl bg-rose-600 px-4 py-3 text-sm font-black text-white">
                   Add Product
@@ -1157,10 +1237,11 @@ export default function AdminDashboard({ admin }) {
               </div>
               <div className="space-y-4">
                 {products.map((product) => (
-                  <div key={product._id} className="grid gap-4 rounded-[24px] border border-white/10 bg-black/20 p-4 md:grid-cols-5">
+                  <div key={product._id} className="grid gap-4 rounded-[24px] border border-white/10 bg-black/20 p-4 md:grid-cols-6">
                     <input className={inputClass} value={product.name} onChange={(event) => setProducts((prev) => prev.map((item) => item._id === product._id ? { ...item, name: event.target.value } : item))} />
                     <input className={inputClass} type="number" value={product.price} onChange={(event) => setProducts((prev) => prev.map((item) => item._id === product._id ? { ...item, price: Number(event.target.value) } : item))} />
                     <input className={inputClass} type="number" value={product.discount || 0} onChange={(event) => setProducts((prev) => prev.map((item) => item._id === product._id ? { ...item, discount: Number(event.target.value) } : item))} />
+                    <input className={inputClass} type="number" min="0" value={product.stockQuantity ?? 0} onChange={(event) => setProducts((prev) => prev.map((item) => item._id === product._id ? { ...item, stockQuantity: Math.max(0, Number(event.target.value || 0)), inStock: Number(event.target.value || 0) > 0 } : item))} />
                     <input className={inputClass} value={product.image || ''} onChange={(event) => setProducts((prev) => prev.map((item) => item._id === product._id ? { ...item, image: event.target.value } : item))} />
                     <div className="flex gap-3">
                       <button type="button" onClick={async () => { await patchItem(`/api/admin/products/${product._id}`, product); setMessage('Product updated হয়েছে।'); }} className="flex-1 rounded-2xl bg-rose-600 px-4 py-3 text-sm font-black text-white">Save</button>
