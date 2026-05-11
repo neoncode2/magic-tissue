@@ -1,32 +1,58 @@
-const baseUrl = (process.env.NEXT_PUBLIC_SPIN_API_BASE_URL || '/api').replace(/\/$/, '');
+import { getSpinApiBases } from '@/lib/spin-api-bases';
+
+function shouldRetryWithNextBase(response) {
+  if (!response) return true;
+  const s = response.status;
+  return s === 502 || s === 503 || s === 504 || s === 522 || s === 524;
+}
 
 async function request(path, options = {}) {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 10_000);
-  let response;
+  const bases = getSpinApiBases();
+  const attempts = [];
 
-  try {
-    response = await fetch(`${baseUrl}${path}`, {
-      ...options,
-      signal: controller.signal,
-    });
-  } catch (error) {
-    if (error?.name === 'AbortError') {
-      throw new Error('Spin server timeout. Please try again.');
+  for (let i = 0; i < bases.length; i += 1) {
+    const baseUrl = bases[i];
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10_000);
+    let response;
+
+    try {
+      response = await fetch(`${baseUrl}${path}`, {
+        ...options,
+        signal: controller.signal,
+      });
+    } catch (error) {
+      clearTimeout(timeout);
+      attempts.push(`${baseUrl}: ${error?.name === 'AbortError' ? 'timeout' : error?.message || 'network error'}`);
+      if (i < bases.length - 1) {
+        continue;
+      }
+      throw new Error(
+        attempts.length
+          ? `Spin server unreachable (${attempts.join(' → ')}).`
+          : 'Spin server unreachable.',
+      );
     }
 
-    throw new Error(`Spin server unreachable at ${baseUrl}. Please verify NEXT_PUBLIC_SPIN_API_BASE_URL and API availability.`);
-  } finally {
     clearTimeout(timeout);
+
+    const data = await response.json().catch(() => ({}));
+
+    if (response.ok) {
+      return data;
+    }
+
+    if (shouldRetryWithNextBase(response) && i < bases.length - 1) {
+      attempts.push(`${baseUrl}: HTTP ${response.status}`);
+      continue;
+    }
+
+    throw new Error(data.error || `Request failed (${response.status})`);
   }
 
-  const data = await response.json().catch(() => ({}));
-
-  if (!response.ok) {
-    throw new Error(data.error || 'Request failed');
-  }
-
-  return data;
+  throw new Error(
+    attempts.length ? `Spin server unreachable (${attempts.join(' → ')}).` : 'Spin server unreachable.',
+  );
 }
 
 export function getSpinConfig() {

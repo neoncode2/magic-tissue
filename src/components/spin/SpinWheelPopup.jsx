@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { memo, useEffect, useMemo, useRef, useState } from 'react';
+import { motion, AnimatePresence, useMotionValue, useTransform, animate } from 'framer-motion';
 import { spinOnce } from '@/lib/spin-api';
 import { useAuth } from '@/context/AuthContext';
 import { useSpin } from '@/context/SpinContext';
+import { normalizeWheelColor } from '@/lib/spin-wheel-colors';
 
 function randomBetween(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -40,12 +41,34 @@ function playSpinTone() {
   oscillator.stop(context.currentTime + 0.72);
 }
 
+const LABEL_RADIUS_PX = 112;
+
+const WheelSegmentLabel = memo(function WheelSegmentLabel({ rotateMotion, midDeg, children }) {
+  const upright = useTransform(rotateMotion, (value) => -(value + midDeg));
+
+  return (
+    <div
+      className="pointer-events-none absolute left-1/2 top-1/2 h-0 w-0"
+      style={{
+        transform: `rotate(${midDeg}deg) translateY(-${LABEL_RADIUS_PX}px)`,
+      }}
+    >
+      <motion.span
+        style={{ rotate: upright }}
+        className="flex max-w-[96px] -translate-x-1/2 justify-center text-center text-[10px] font-black uppercase leading-snug tracking-[0.1em] text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]"
+      >
+        {children}
+      </motion.span>
+    </div>
+  );
+});
+
 export default function SpinWheelPopup() {
   const { token, isAuthReady } = useAuth();
   const { config, status, setStatus } = useSpin();
   const [isOpen, setIsOpen] = useState(false);
   const [isSpinning, setIsSpinning] = useState(false);
-  const [rotation, setRotation] = useState(0);
+  const rotateMotion = useMotionValue(0);
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
   const timeoutRef = useRef(null);
@@ -59,14 +82,15 @@ export default function SpinWheelPopup() {
 
   const wheelBackground = useMemo(() => {
     if (options.length === 0) {
-      return 'conic-gradient(#881337 0deg 360deg)';
+      return 'conic-gradient(#e11d48 0deg 360deg)';
     }
 
     return `conic-gradient(${options
       .map((option, index) => {
         const start = index * segmentSize;
         const end = start + segmentSize;
-        return `${option.color || ['#be123c', '#ea580c', '#f59e0b', '#1f2937'][index % 4]} ${start}deg ${end}deg`;
+        const color = normalizeWheelColor(option.color, index);
+        return `${color} ${start}deg ${end}deg`;
       })
       .join(', ')})`;
   }, [options, segmentSize]);
@@ -147,10 +171,14 @@ export default function SpinWheelPopup() {
       const reward = data.reward;
       const optionIndex = Math.max(0, options.findIndex((option) => option.id === reward.id));
       const landingAngle = optionIndex * segmentSize + segmentSize / 2;
-      const nextRotation = 360 * 6 + (360 - landingAngle);
+      const delta = 360 * 6 + (360 - landingAngle);
 
-      setRotation((prev) => prev + nextRotation);
       setResult(reward);
+
+      await animate(rotateMotion, rotateMotion.get() + delta, {
+        duration: 3.6,
+        ease: [0.15, 0.8, 0.2, 1],
+      });
 
       window.setTimeout(() => {
         setStatus({
@@ -207,8 +235,7 @@ export default function SpinWheelPopup() {
               Close
             </button>
 
-            {/* Added hidden lg:block here to hide this left section on mobile devices */}
-            <div className="hidden lg:block relative overflow-hidden border-b border-white/10 bg-[radial-gradient(circle_at_top,#fb718533,transparent_50%),linear-gradient(180deg,#1a0d12,#0b090d)] p-8 lg:border-b-0 lg:border-r">
+            <div className="relative hidden overflow-hidden border-b border-white/10 bg-[radial-gradient(circle_at_top,#fb718533,transparent_50%),linear-gradient(180deg,#2a1420,#120a14)] p-8 lg:block lg:border-b-0 lg:border-r">
               {config?.sideImageUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={config.sideImageUrl} alt="Spin reward" className="absolute inset-0 h-full w-full object-cover opacity-30" />
@@ -229,7 +256,7 @@ export default function SpinWheelPopup() {
 
                 <div className="mt-8 grid gap-3 sm:grid-cols-2">
                   {options.slice(0, 4).map((option) => (
-                    <div key={option.id} className="rounded-[22px] border border-white/10 bg-black/30 px-4 py-3">
+                    <div key={option.id} className="rounded-[22px] border border-white/10 bg-white/10 px-4 py-3">
                       <div className="text-xs font-black uppercase tracking-[0.18em] text-white/45">Reward</div>
                       <div className="mt-2 text-lg font-bold text-white">{option.label}</div>
                     </div>
@@ -238,36 +265,26 @@ export default function SpinWheelPopup() {
               </div>
             </div>
 
-            <div className="relative flex flex-col items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_top,#f59e0b22,transparent_45%),linear-gradient(180deg,#120f16,#09080c)] px-6 py-10">
+            <div className="relative flex flex-col items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_top,#f59e0b22,transparent_45%),linear-gradient(180deg,#1a1422,#0e0a12)] px-6 py-10">
               <div className="absolute top-10 h-6 w-6 rotate-45 border-l-[18px] border-r-[18px] border-t-[28px] border-l-transparent border-r-transparent border-t-rose-500" />
 
-              <div className="relative flex h-[320px] w-[320px] items-center justify-center rounded-full border border-white/10 bg-black/20 p-4 shadow-[0_30px_80px_rgba(0,0,0,0.45)]">
+              <div className="relative flex h-[320px] w-[320px] items-center justify-center rounded-full border border-white/15 bg-gradient-to-br from-white/[0.08] to-white/[0.02] p-4 shadow-[0_30px_80px_rgba(0,0,0,0.35)]">
                 <motion.div
-                  animate={{ rotate: rotation }}
-                  transition={{ duration: 3.6, ease: [0.15, 0.8, 0.2, 1] }}
-                  style={{ background: wheelBackground }}
+                  style={{ rotate: rotateMotion, background: wheelBackground }}
                   className="relative h-full w-full rounded-full border-[10px] border-[#f4d7a1] shadow-[inset_0_0_30px_rgba(255,255,255,0.15)]"
                 >
-                  {options.map((option, index) => (
-                    <div
-                      key={option.id}
-                      className="absolute left-1/2 top-1/2 origin-top-left"
-                      style={{
-                        transform: `rotate(${index * segmentSize}deg) translateY(-48%)`,
-                      }}
-                    >
-                      <div
-                        className="flex w-[132px] -translate-x-1/2 -translate-y-[132px] justify-center text-center text-[11px] font-black uppercase tracking-[0.14em] text-white"
-                        style={{ transform: `rotate(${segmentSize / 2}deg)` }}
-                      >
+                  {options.map((option, index) => {
+                    const midDeg = index * segmentSize + segmentSize / 2;
+                    return (
+                      <WheelSegmentLabel key={option.id} rotateMotion={rotateMotion} midDeg={midDeg}>
                         {option.label}
-                      </div>
-                    </div>
-                  ))}
+                      </WheelSegmentLabel>
+                    );
+                  })}
                 </motion.div>
 
-                <div className="absolute flex h-24 w-24 items-center justify-center rounded-full border-[8px] border-[#f4d7a1] bg-[#1a1015] shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
-                  <span className="text-sm font-black uppercase tracking-[0.22em] text-amber-100">Luck</span>
+                <div className="absolute flex h-24 w-24 items-center justify-center rounded-full border-[8px] border-[#fde68a] bg-gradient-to-br from-rose-500 via-fuchsia-600 to-indigo-700 shadow-[0_12px_28px_rgba(99,102,241,0.45)]">
+                  <span className="text-sm font-black uppercase tracking-[0.22em] text-white drop-shadow-sm">Luck</span>
                 </div>
               </div>
 
@@ -287,7 +304,11 @@ export default function SpinWheelPopup() {
                 </div>
               ) : null}
 
-              {error ? <p className="mt-5 text-sm text-rose-300">{error}</p> : null}
+              {error ? (
+                <p className="mt-5 max-w-md rounded-2xl border border-rose-400/25 bg-rose-950/40 px-4 py-3 text-center text-sm leading-relaxed text-rose-100">
+                  {error}
+                </p>
+              ) : null}
 
               {result && result.type !== 'none'
                 ? confetti.map((piece) => (

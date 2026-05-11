@@ -21,7 +21,7 @@ export const defaultSpinOptions = [
     value: 0,
     probability: 50,
     active: true,
-    color: '#111827',
+    color: '#7c3aed',
   },
 ];
 

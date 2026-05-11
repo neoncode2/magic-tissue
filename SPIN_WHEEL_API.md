@@ -2,13 +2,13 @@
 
 ## Run
 
-Frontend:
+Spin uses **Next.js Route Handlers** under `/api` (same process as `next dev` / `next start` on port **3000**). No separate port **4000** server is started by `npm run dev`.
 
 ```bash
 npm run dev
 ```
 
-Backend:
+Optional standalone Express mirror (only if you need it):
 
 ```bash
 npm run dev:backend
@@ -16,12 +16,10 @@ npm run dev:backend
 
 ## Required Env
 
-Add these to `.env.local`:
+Add to `.env.local` (MongoDB etc. as in `.env.example`). Spin API base is fixed in code: local dev uses `http://localhost:<port>/api`, production site uses `https://tissuepower.com/api`.
 
 ```env
-NEXT_PUBLIC_SPIN_API_BASE_URL=https://tissuepower.com/api
 NEXT_PUBLIC_SPIN_USER_STORAGE_KEY=magic-tissue-spin-user-id
-SPIN_SERVER_PORT=4000
 ```
 
 ## Frontend Flow
