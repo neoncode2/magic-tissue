@@ -15,7 +15,7 @@ async function request(path, options = {}) {
       throw new Error('Spin server timeout. Please try again.');
     }
 
-    throw new Error('Spin server unreachable. Please ensure backend is running on port 4000.');
+    throw new Error(`Spin server unreachable at ${baseUrl}. Please verify NEXT_PUBLIC_SPIN_API_BASE_URL and API availability.`);
   } finally {
     clearTimeout(timeout);
   }

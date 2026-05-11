@@ -19,7 +19,7 @@ npm run dev:backend
 Add these to `.env.local`:
 
 ```env
-NEXT_PUBLIC_SPIN_API_BASE_URL=http://localhost:4000/api
+NEXT_PUBLIC_SPIN_API_BASE_URL=https://tissuepower.com/api
 NEXT_PUBLIC_SPIN_USER_STORAGE_KEY=magic-tissue-spin-user-id
 SPIN_SERVER_PORT=4000
 ```
