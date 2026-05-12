@@ -1,37 +1,26 @@
-/** Production spin API (Next `/api` on this host only). */
-const TISSUEPOWER_SPIN_API = 'https://tissuepower.com/api';
-
-function isLocalHostname(hostname) {
-  return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]';
-}
-
-function isTissuepowerHostname(hostname) {
-  return hostname === 'tissuepower.com' || hostname === 'www.tissuepower.com';
-}
-
 /**
- * Spin client may call only:
- * - Local Next: same tab origin + `/api` (dev on localhost, any port)
- * - Live site: `https://tissuepower.com/api`
+ * Spin wheel calls the Next.js Route Handlers on the same host as the page.
+ * (Previously non–tissuepower.com hosts fell back to `tissuepower.com`, which
+ * broke Vercel previews, VPS domains, and any deploy where that URL was down or
+ * blocked cross-origin.)
  *
- * No other hosts (env `NEXT_PUBLIC_SPIN_API_BASE_URL` is ignored).
+ * Optional `NEXT_PUBLIC_SPIN_API_BASE_URL` (no trailing slash) for SSR/tests
+ * when `window` is unavailable.
  */
 export function getSpinApiBases() {
   if (typeof window !== 'undefined') {
-    const { hostname, origin } = window.location;
+    const origin = window.location.origin.replace(/\/$/, '');
+    return [`${origin}/api`];
+  }
 
-    if (isLocalHostname(hostname)) {
-      return [`${origin.replace(/\/$/, '')}/api`];
-    }
-
-    if (isTissuepowerHostname(hostname)) {
-      return [TISSUEPOWER_SPIN_API];
-    }
+  const envBase = process.env.NEXT_PUBLIC_SPIN_API_BASE_URL?.replace(/\/$/, '');
+  if (envBase) {
+    return [envBase];
   }
 
   if (process.env.NODE_ENV !== 'production') {
     return ['http://localhost:3000/api'];
   }
 
-  return [TISSUEPOWER_SPIN_API];
+  return ['http://localhost:3000/api'];
 }

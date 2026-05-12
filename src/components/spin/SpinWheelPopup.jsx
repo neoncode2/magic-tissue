@@ -63,6 +63,8 @@ const WheelSegmentLabel = memo(function WheelSegmentLabel({ rotateMotion, midDeg
   );
 });
 
+const isDevClient = process.env.NODE_ENV === 'development';
+
 export default function SpinWheelPopup() {
   const { token, isAuthReady } = useAuth();
   const { config, status, setStatus } = useSpin();
@@ -78,7 +80,9 @@ export default function SpinWheelPopup() {
 
   const options = useMemo(() => config?.options || [], [config?.options]);
   const segmentSize = options.length > 0 ? 360 / options.length : 360;
-  const reappearDelayMs = Math.max(5000, Number(config?.reappearDelaySeconds || 30) * 1000);
+  const reappearDelayMs = isDevClient
+    ? 4000
+    : Math.max(5000, Number(config?.reappearDelaySeconds || 30) * 1000);
 
   const wheelBackground = useMemo(() => {
     if (options.length === 0) {
@@ -112,18 +116,22 @@ export default function SpinWheelPopup() {
       return undefined;
     }
 
+    const showProbability = isDevClient ? 1 : Number(config.showProbability ?? 0.5);
+
     const showPopup = () => {
       if (Date.now() < getNextAllowedAt()) {
         return;
       }
-      if (Math.random() > Number(config.showProbability ?? 0.5)) {
+      if (Math.random() > showProbability) {
         return;
       }
 
       setIsOpen(true);
     };
 
-    const delay = randomBetween(Number(config.minDelaySeconds || 5), Number(config.maxDelaySeconds || 20)) * 1000;
+    const delay = isDevClient
+      ? randomBetween(1, 3) * 1000
+      : randomBetween(Number(config.minDelaySeconds || 5), Number(config.maxDelaySeconds || 20)) * 1000;
     timeoutRef.current = window.setTimeout(showPopup, delay);
     intervalRef.current = window.setInterval(() => {
       if (!isOpen && !isSpinning && !result) {
