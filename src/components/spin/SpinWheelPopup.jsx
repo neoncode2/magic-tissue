@@ -196,7 +196,7 @@ export default function SpinWheelPopup() {
         if (orderSection) {
           orderSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
-      }, 3600);
+      }, 1800);
     } catch (spinError) {
       if (spinError.message === 'Spin already used') {
         setStatus((prev) => ({ ...prev, hasSpun: true }));
@@ -205,7 +205,7 @@ export default function SpinWheelPopup() {
     } finally {
       window.setTimeout(() => {
         setIsSpinning(false);
-      }, 3600);
+      }, 1800);
     }
   }
 
@@ -298,7 +298,7 @@ export default function SpinWheelPopup() {
               </button>
 
               {result ? (
-                <div className="mt-6 rounded-[24px] border border-emerald-400/20 bg-emerald-400/10 px-5 py-4 text-center">
+                <div className="mt-6 rounded-3xl border border-emerald-400/20 bg-emerald-400/10 px-5 py-4 text-center">
                   <div className="text-xs font-black uppercase tracking-[0.18em] text-emerald-200/70">You Won</div>
                   <div className="mt-2 text-2xl font-black text-white">{result.label}</div>
                 </div>
