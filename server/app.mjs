@@ -13,10 +13,12 @@ export function createApp() {
   app.use(express.json());
 
   app.get('/health', (_req, res) => {
-    res.json({ ok: true });
+    res.json({ ok: true, service: 'magic-tissue-express' });
   });
 
   app.use('/api/spin', spinRoutes);
+  /** Same handler as Next `app/api/spin-orders` (client uses `/api/spin-orders`). */
+  app.use('/api/spin-orders', orderRoutes);
   app.use('/api/orders', orderRoutes);
 
   app.use((error, _req, res, _next) => {

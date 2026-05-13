@@ -8,10 +8,11 @@ import { pickWeightedReward } from '../services/spin.mjs';
 
 const router = Router();
 
+/** Matches `src/lib/spin-defaults.js` so Express and Next share the same seed shape. */
 const seedOptions = [
   { label: '10% OFF', type: 'percentage', value: 10, probability: 30, active: true, color: '#e11d48' },
   { label: '50 TK OFF', type: 'fixed', value: 50, probability: 20, active: true, color: '#f97316' },
-  { label: 'No Discount', type: 'none', value: 0, probability: 50, active: true, color: '#111827' },
+  { label: 'No Discount', type: 'none', value: 0, probability: 50, active: true, color: '#7c3aed' },
 ];
 
 async function ensureSpinState() {

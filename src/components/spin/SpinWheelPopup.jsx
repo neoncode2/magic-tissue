@@ -43,6 +43,46 @@ function playSpinTone() {
 
 const LABEL_RADIUS_PX = 112;
 
+/** Radial lines between slices (matches CSS conic-gradient: 0° = top, clockwise). */
+function WheelSegmentDividers({ segmentCount, segmentSizeDeg }) {
+  if (segmentCount < 2) {
+    return null;
+  }
+
+  const cx = 50;
+  const cy = 50;
+  const r = 49.4;
+
+  return (
+    <svg
+      viewBox="0 0 100 100"
+      className="pointer-events-none absolute inset-0 h-full w-full"
+      preserveAspectRatio="xMidYMid meet"
+      aria-hidden
+    >
+      {Array.from({ length: segmentCount }, (_, i) => {
+        const deg = i * segmentSizeDeg;
+        const rad = (deg * Math.PI) / 180;
+        const x2 = cx + r * Math.sin(rad);
+        const y2 = cy - r * Math.cos(rad);
+        return (
+          <line
+            key={i}
+            x1={cx}
+            y1={cy}
+            x2={x2}
+            y2={y2}
+            stroke="#fffbeb"
+            strokeOpacity={0.98}
+            strokeWidth={0.85}
+            strokeLinecap="round"
+          />
+        );
+      })}
+    </svg>
+  );
+}
+
 const WheelSegmentLabel = memo(function WheelSegmentLabel({ rotateMotion, midDeg, children }) {
   const upright = useTransform(rotateMotion, (value) => -(value + midDeg));
 
@@ -89,7 +129,7 @@ export default function SpinWheelPopup() {
       return 'conic-gradient(#e11d48 0deg 360deg)';
     }
 
-    return `conic-gradient(${options
+    return `conic-gradient(from 0deg at 50% 50%, ${options
       .map((option, index) => {
         const start = index * segmentSize;
         const end = start + segmentSize;
@@ -188,6 +228,10 @@ export default function SpinWheelPopup() {
         ease: [0.15, 0.8, 0.2, 1],
       });
 
+      const settled = rotateMotion.get();
+      rotateMotion.set(((settled % 360) + 360) % 360);
+      setIsSpinning(false);
+
       window.setTimeout(() => {
         setStatus({
           hasSpun: true,
@@ -210,10 +254,7 @@ export default function SpinWheelPopup() {
         setStatus((prev) => ({ ...prev, hasSpun: true }));
       }
       setError(spinError.message || 'Spin failed');
-    } finally {
-      window.setTimeout(() => {
-        setIsSpinning(false);
-      }, 1800);
+      setIsSpinning(false);
     }
   }
 
@@ -279,8 +320,9 @@ export default function SpinWheelPopup() {
               <div className="relative flex h-[320px] w-[320px] items-center justify-center rounded-full border border-white/15 bg-gradient-to-br from-white/[0.08] to-white/[0.02] p-4 shadow-[0_30px_80px_rgba(0,0,0,0.35)]">
                 <motion.div
                   style={{ rotate: rotateMotion, background: wheelBackground }}
-                  className="relative h-full w-full rounded-full border-[10px] border-[#f4d7a1] shadow-[inset_0_0_30px_rgba(255,255,255,0.15)]"
+                  className="relative h-full w-full rounded-full border-[10px] border-[#f4d7a1] shadow-[inset_0_0_30px_rgba(255,255,255,0.15)] will-change-transform"
                 >
+                  <WheelSegmentDividers segmentCount={options.length} segmentSizeDeg={segmentSize} />
                   {options.map((option, index) => {
                     const midDeg = index * segmentSize + segmentSize / 2;
                     return (

@@ -1,5 +1,7 @@
 'use client';
 
+import WheelColorField from '@/components/admin/WheelColorField';
+
 function StatPill({ label, value }) {
   return (
     <div className="rounded-[22px] border border-white/10 bg-black/20 px-4 py-3">
@@ -208,105 +210,154 @@ export default function SpinAdminPanel({
           <p className="mt-2 text-sm leading-6 text-gray-400">Add, update, delete, and rebalance wheel rewards and probabilities.</p>
         </div>
 
-        <div className="mb-6 grid gap-4 rounded-[24px] border border-dashed border-white/10 bg-black/20 p-4 md:grid-cols-6">
-          <input
-            className={inputClass}
-            value={newSpinOption.label}
-            onChange={(event) => setNewSpinOption((prev) => ({ ...prev, label: event.target.value }))}
-            placeholder="Reward label"
-          />
-          <select
-            className={inputClass}
-            value={newSpinOption.type}
-            onChange={(event) => setNewSpinOption((prev) => ({ ...prev, type: event.target.value }))}
-          >
-            <option value="percentage">percentage</option>
-            <option value="fixed">fixed</option>
-            <option value="none">none</option>
-          </select>
-          <input
-            className={inputClass}
-            type="number"
-            min="0"
-            value={newSpinOption.value}
-            onChange={(event) => setNewSpinOption((prev) => ({ ...prev, value: Number(event.target.value) }))}
-            placeholder="Value"
-          />
-          <input
-            className={inputClass}
-            type="number"
-            min="0"
-            value={newSpinOption.probability}
-            onChange={(event) => setNewSpinOption((prev) => ({ ...prev, probability: Number(event.target.value) }))}
-            placeholder="Probability"
-          />
-          <input
-            className={inputClass}
-            value={newSpinOption.color}
-            onChange={(event) => setNewSpinOption((prev) => ({ ...prev, color: event.target.value }))}
-            placeholder="Color hex"
-          />
-          <button
-            type="button"
-            onClick={createSpinOption}
-            className="rounded-2xl bg-rose-600 px-4 py-3 text-sm font-black text-white"
-          >
-            Add Reward
-          </button>
-        </div>
-
-        <div className="space-y-4">
-          {spinOptions.map((option) => (
-            <div key={option._id} className="grid gap-4 rounded-[24px] border border-white/10 bg-black/20 p-4 xl:grid-cols-[1fr_180px_120px_120px_140px_220px]">
+        <div className="mb-6 space-y-4 rounded-[24px] border border-dashed border-white/10 bg-black/20 p-4">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+            <div className="rounded-2xl border border-white/10 bg-black/25 p-3">
+              <div className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Label</div>
               <input
-                className={inputClass}
-                value={option.label}
-                onChange={(event) => setSpinOptions((prev) => prev.map((item) => (item._id === option._id ? { ...item, label: event.target.value } : item)))}
+                className={`${inputClass} mt-2`}
+                value={newSpinOption.label}
+                onChange={(event) => setNewSpinOption((prev) => ({ ...prev, label: event.target.value }))}
+                placeholder="Reward label"
               />
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-black/25 p-3">
+              <div className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Type</div>
               <select
-                className={inputClass}
-                value={option.type}
-                onChange={(event) => setSpinOptions((prev) => prev.map((item) => (item._id === option._id ? { ...item, type: event.target.value } : item)))}
+                className={`${inputClass} mt-2`}
+                value={newSpinOption.type}
+                onChange={(event) => setNewSpinOption((prev) => ({ ...prev, type: event.target.value }))}
               >
                 <option value="percentage">percentage</option>
                 <option value="fixed">fixed</option>
                 <option value="none">none</option>
               </select>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-black/25 p-3">
+              <div className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Value</div>
               <input
-                className={inputClass}
+                className={`${inputClass} mt-2`}
                 type="number"
                 min="0"
-                value={option.value}
-                onChange={(event) => setSpinOptions((prev) => prev.map((item) => (item._id === option._id ? { ...item, value: Number(event.target.value) } : item)))}
+                value={newSpinOption.value}
+                onChange={(event) => setNewSpinOption((prev) => ({ ...prev, value: Number(event.target.value) }))}
+                placeholder="Value"
               />
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-black/25 p-3">
+              <div className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Weight</div>
               <input
-                className={inputClass}
+                className={`${inputClass} mt-2`}
                 type="number"
                 min="0"
-                value={option.probability}
-                onChange={(event) => setSpinOptions((prev) => prev.map((item) => (item._id === option._id ? { ...item, probability: Number(event.target.value) } : item)))}
+                value={newSpinOption.probability}
+                onChange={(event) => setNewSpinOption((prev) => ({ ...prev, probability: Number(event.target.value) }))}
+                placeholder="Probability"
               />
-              <input
-                className={inputClass}
-                value={option.color || ''}
-                onChange={(event) => setSpinOptions((prev) => prev.map((item) => (item._id === option._id ? { ...item, color: event.target.value } : item)))}
-              />
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={() => patchSpinOption(option)}
-                  className="flex-1 rounded-2xl bg-rose-600 px-4 py-3 text-sm font-black text-white"
-                >
-                  Save
-                </button>
-                <button
-                  type="button"
-                  onClick={() => deleteSpinOption(option._id)}
-                  className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-bold text-white"
-                >
-                  Delete
-                </button>
+            </div>
+            <div className="flex items-end">
+              <button
+                type="button"
+                onClick={createSpinOption}
+                className="w-full rounded-2xl bg-rose-600 px-4 py-3 text-sm font-black text-white"
+              >
+                Add Reward
+              </button>
+            </div>
+          </div>
+          <WheelColorField
+            label="Wheel segment color"
+            value={newSpinOption.color}
+            onChange={(hex) => setNewSpinOption((prev) => ({ ...prev, color: hex }))}
+          />
+        </div>
+
+        <div className="space-y-4">
+          {spinOptions.map((option) => (
+            <div key={option._id} className="space-y-4 rounded-[24px] border border-white/10 bg-black/20 p-4">
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+                <div className="rounded-2xl border border-white/10 bg-black/25 p-3">
+                  <div className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Label</div>
+                  <input
+                    className={`${inputClass} mt-2`}
+                    value={option.label}
+                    onChange={(event) =>
+                      setSpinOptions((prev) =>
+                        prev.map((item) => (item._id === option._id ? { ...item, label: event.target.value } : item)),
+                      )
+                    }
+                  />
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-black/25 p-3">
+                  <div className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Type</div>
+                  <select
+                    className={`${inputClass} mt-2`}
+                    value={option.type}
+                    onChange={(event) =>
+                      setSpinOptions((prev) =>
+                        prev.map((item) => (item._id === option._id ? { ...item, type: event.target.value } : item)),
+                      )
+                    }
+                  >
+                    <option value="percentage">percentage</option>
+                    <option value="fixed">fixed</option>
+                    <option value="none">none</option>
+                  </select>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-black/25 p-3">
+                  <div className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Value</div>
+                  <input
+                    className={`${inputClass} mt-2`}
+                    type="number"
+                    min="0"
+                    value={option.value}
+                    onChange={(event) =>
+                      setSpinOptions((prev) =>
+                        prev.map((item) => (item._id === option._id ? { ...item, value: Number(event.target.value) } : item)),
+                      )
+                    }
+                  />
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-black/25 p-3">
+                  <div className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Weight</div>
+                  <input
+                    className={`${inputClass} mt-2`}
+                    type="number"
+                    min="0"
+                    value={option.probability}
+                    onChange={(event) =>
+                      setSpinOptions((prev) =>
+                        prev.map((item) =>
+                          item._id === option._id ? { ...item, probability: Number(event.target.value) } : item,
+                        ),
+                      )
+                    }
+                  />
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => patchSpinOption(option)}
+                    className="min-h-[48px] flex-1 rounded-2xl bg-rose-600 px-4 py-3 text-sm font-black text-white"
+                  >
+                    Save
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => deleteSpinOption(option._id)}
+                    className="min-h-[48px] rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-bold text-white"
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
+              <WheelColorField
+                label="Wheel segment color"
+                value={option.color || ''}
+                onChange={(hex) =>
+                  setSpinOptions((prev) => prev.map((item) => (item._id === option._id ? { ...item, color: hex } : item)))
+                }
+              />
             </div>
           ))}
         </div>
